@@ -199,7 +199,9 @@ func (service *Service) ClearFinish(result gio.AsyncResulter) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -244,7 +246,9 @@ func (service *Service) ClearSync(ctx context.Context, schema *Schema, attribute
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -290,7 +294,9 @@ func (self *Service) EnsureSessionFinish(result gio.AsyncResulter) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -321,7 +327,9 @@ func (self *Service) EnsureSessionSync(ctx context.Context) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -468,7 +476,9 @@ func (self *Service) LoadCollectionsFinish(result gio.AsyncResulter) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -499,7 +509,9 @@ func (self *Service) LoadCollectionsSync(ctx context.Context) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -562,29 +574,33 @@ func (service *Service) LockFinish(result gio.AsyncResulter) ([]gio.DBusProxy, i
 	var _gint int               // out
 	var _goerr error            // out
 
-	_locked = make([]gio.DBusProxy, 0, gextras.ListSize(unsafe.Pointer(_arg2)))
-	gextras.MoveList(unsafe.Pointer(_arg2), true, func(v unsafe.Pointer) {
-		src := (*C.GDBusProxy)(v)
-		var dst gio.DBusProxy // out
-		{
-			obj := externglib.AssumeOwnership(unsafe.Pointer(src))
-			dst = gio.DBusProxy{
-				Object: obj,
-				AsyncInitable: gio.AsyncInitable{
+	if _arg2 != nil {
+		_locked = make([]gio.DBusProxy, 0, gextras.ListSize(unsafe.Pointer(_arg2)))
+		gextras.MoveList(unsafe.Pointer(_arg2), true, func(v unsafe.Pointer) {
+			src := (*C.GDBusProxy)(v)
+			var dst gio.DBusProxy // out
+			{
+				obj := externglib.AssumeOwnership(unsafe.Pointer(src))
+				dst = gio.DBusProxy{
 					Object: obj,
-				},
-				DBusInterface: gio.DBusInterface{
-					Object: obj,
-				},
-				Initable: gio.Initable{
-					Object: obj,
-				},
+					AsyncInitable: gio.AsyncInitable{
+						Object: obj,
+					},
+					DBusInterface: gio.DBusInterface{
+						Object: obj,
+					},
+					Initable: gio.Initable{
+						Object: obj,
+					},
+				}
 			}
-		}
-		_locked = append(_locked, dst)
-	})
+			_locked = append(_locked, dst)
+		})
+	}
 	_gint = int(_cret)
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _locked, _gint, _goerr
 }
@@ -628,29 +644,33 @@ func (service *Service) LockSync(ctx context.Context, objects []gio.DBusProxy) (
 	var _gint int               // out
 	var _goerr error            // out
 
-	_locked = make([]gio.DBusProxy, 0, gextras.ListSize(unsafe.Pointer(_arg3)))
-	gextras.MoveList(unsafe.Pointer(_arg3), true, func(v unsafe.Pointer) {
-		src := (*C.GDBusProxy)(v)
-		var dst gio.DBusProxy // out
-		{
-			obj := externglib.AssumeOwnership(unsafe.Pointer(src))
-			dst = gio.DBusProxy{
-				Object: obj,
-				AsyncInitable: gio.AsyncInitable{
+	if _arg3 != nil {
+		_locked = make([]gio.DBusProxy, 0, gextras.ListSize(unsafe.Pointer(_arg3)))
+		gextras.MoveList(unsafe.Pointer(_arg3), true, func(v unsafe.Pointer) {
+			src := (*C.GDBusProxy)(v)
+			var dst gio.DBusProxy // out
+			{
+				obj := externglib.AssumeOwnership(unsafe.Pointer(src))
+				dst = gio.DBusProxy{
 					Object: obj,
-				},
-				DBusInterface: gio.DBusInterface{
-					Object: obj,
-				},
-				Initable: gio.Initable{
-					Object: obj,
-				},
+					AsyncInitable: gio.AsyncInitable{
+						Object: obj,
+					},
+					DBusInterface: gio.DBusInterface{
+						Object: obj,
+					},
+					Initable: gio.Initable{
+						Object: obj,
+					},
+				}
 			}
-		}
-		_locked = append(_locked, dst)
-	})
+			_locked = append(_locked, dst)
+		})
+	}
 	_gint = int(_cret)
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _locked, _gint, _goerr
 }
@@ -718,7 +738,9 @@ func (service *Service) LookupFinish(result gio.AsyncResulter) (*Value, error) {
 	runtime.SetFinalizer(_value, func(v *Value) {
 		C.secret_value_unref((C.gpointer)(gextras.StructNative(unsafe.Pointer(v))))
 	})
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _value, _goerr
 }
@@ -769,7 +791,9 @@ func (service *Service) LookupSync(ctx context.Context, schema *Schema, attribut
 	runtime.SetFinalizer(_value, func(v *Value) {
 		C.secret_value_unref((C.gpointer)(gextras.StructNative(unsafe.Pointer(v))))
 	})
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _value, _goerr
 }
@@ -829,7 +853,9 @@ func (self *Service) PromptFinish(result gio.AsyncResulter) (*glib.Variant, erro
 	runtime.SetFinalizer(_variant, func(v *glib.Variant) {
 		C.g_variant_unref((*C.GVariant)(gextras.StructNative(unsafe.Pointer(v))))
 	})
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _variant, _goerr
 }
@@ -875,7 +901,9 @@ func (self *Service) PromptSync(ctx context.Context, prompt *Prompt, returnType 
 	runtime.SetFinalizer(_variant, func(v *glib.Variant) {
 		C.g_variant_unref((*C.GVariant)(gextras.StructNative(unsafe.Pointer(v))))
 	})
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _variant, _goerr
 }
@@ -954,7 +982,9 @@ func (service *Service) SearchFinish(result gio.AsyncResulter) ([]Item, error) {
 		dst = *wrapItem(externglib.AssumeOwnership(unsafe.Pointer(src)))
 		_list = append(_list, dst)
 	})
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _list, _goerr
 }
@@ -1021,7 +1051,9 @@ func (service *Service) SearchSync(ctx context.Context, schema *Schema, attribut
 		dst = *wrapItem(externglib.AssumeOwnership(unsafe.Pointer(src)))
 		_list = append(_list, dst)
 	})
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _list, _goerr
 }
@@ -1070,7 +1102,9 @@ func (service *Service) SetAliasFinish(result gio.AsyncResulter) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -1103,7 +1137,9 @@ func (service *Service) SetAliasSync(ctx context.Context, alias string, collecti
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -1152,8 +1188,10 @@ func (service *Service) Store(ctx context.Context, schema *Schema, attributes ma
 		C.g_hash_table_insert(_arg2, C.gpointer(unsafe.Pointer(kdst)), C.gpointer(unsafe.Pointer(vdst)))
 	}
 	defer C.g_hash_table_unref(_arg2)
-	_arg3 = (*C.gchar)(unsafe.Pointer(C.CString(collection)))
-	defer C.free(unsafe.Pointer(_arg3))
+	if collection != "" {
+		_arg3 = (*C.gchar)(unsafe.Pointer(C.CString(collection)))
+		defer C.free(unsafe.Pointer(_arg3))
+	}
 	_arg4 = (*C.gchar)(unsafe.Pointer(C.CString(label)))
 	defer C.free(unsafe.Pointer(_arg4))
 	_arg5 = (*C.SecretValue)(gextras.StructNative(unsafe.Pointer(value)))
@@ -1177,7 +1215,9 @@ func (service *Service) StoreFinish(result gio.AsyncResulter) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -1226,8 +1266,10 @@ func (service *Service) StoreSync(ctx context.Context, schema *Schema, attribute
 		C.g_hash_table_insert(_arg2, C.gpointer(unsafe.Pointer(kdst)), C.gpointer(unsafe.Pointer(vdst)))
 	}
 	defer C.g_hash_table_unref(_arg2)
-	_arg3 = (*C.gchar)(unsafe.Pointer(C.CString(collection)))
-	defer C.free(unsafe.Pointer(_arg3))
+	if collection != "" {
+		_arg3 = (*C.gchar)(unsafe.Pointer(C.CString(collection)))
+		defer C.free(unsafe.Pointer(_arg3))
+	}
 	_arg4 = (*C.gchar)(unsafe.Pointer(C.CString(label)))
 	defer C.free(unsafe.Pointer(_arg4))
 	_arg5 = (*C.SecretValue)(gextras.StructNative(unsafe.Pointer(value)))
@@ -1236,7 +1278,9 @@ func (service *Service) StoreSync(ctx context.Context, schema *Schema, attribute
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -1299,29 +1343,33 @@ func (service *Service) UnlockFinish(result gio.AsyncResulter) ([]gio.DBusProxy,
 	var _gint int                 // out
 	var _goerr error              // out
 
-	_unlocked = make([]gio.DBusProxy, 0, gextras.ListSize(unsafe.Pointer(_arg2)))
-	gextras.MoveList(unsafe.Pointer(_arg2), true, func(v unsafe.Pointer) {
-		src := (*C.GDBusProxy)(v)
-		var dst gio.DBusProxy // out
-		{
-			obj := externglib.AssumeOwnership(unsafe.Pointer(src))
-			dst = gio.DBusProxy{
-				Object: obj,
-				AsyncInitable: gio.AsyncInitable{
+	if _arg2 != nil {
+		_unlocked = make([]gio.DBusProxy, 0, gextras.ListSize(unsafe.Pointer(_arg2)))
+		gextras.MoveList(unsafe.Pointer(_arg2), true, func(v unsafe.Pointer) {
+			src := (*C.GDBusProxy)(v)
+			var dst gio.DBusProxy // out
+			{
+				obj := externglib.AssumeOwnership(unsafe.Pointer(src))
+				dst = gio.DBusProxy{
 					Object: obj,
-				},
-				DBusInterface: gio.DBusInterface{
-					Object: obj,
-				},
-				Initable: gio.Initable{
-					Object: obj,
-				},
+					AsyncInitable: gio.AsyncInitable{
+						Object: obj,
+					},
+					DBusInterface: gio.DBusInterface{
+						Object: obj,
+					},
+					Initable: gio.Initable{
+						Object: obj,
+					},
+				}
 			}
-		}
-		_unlocked = append(_unlocked, dst)
-	})
+			_unlocked = append(_unlocked, dst)
+		})
+	}
 	_gint = int(_cret)
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _unlocked, _gint, _goerr
 }
@@ -1365,29 +1413,33 @@ func (service *Service) UnlockSync(ctx context.Context, objects []gio.DBusProxy)
 	var _gint int                 // out
 	var _goerr error              // out
 
-	_unlocked = make([]gio.DBusProxy, 0, gextras.ListSize(unsafe.Pointer(_arg3)))
-	gextras.MoveList(unsafe.Pointer(_arg3), true, func(v unsafe.Pointer) {
-		src := (*C.GDBusProxy)(v)
-		var dst gio.DBusProxy // out
-		{
-			obj := externglib.AssumeOwnership(unsafe.Pointer(src))
-			dst = gio.DBusProxy{
-				Object: obj,
-				AsyncInitable: gio.AsyncInitable{
+	if _arg3 != nil {
+		_unlocked = make([]gio.DBusProxy, 0, gextras.ListSize(unsafe.Pointer(_arg3)))
+		gextras.MoveList(unsafe.Pointer(_arg3), true, func(v unsafe.Pointer) {
+			src := (*C.GDBusProxy)(v)
+			var dst gio.DBusProxy // out
+			{
+				obj := externglib.AssumeOwnership(unsafe.Pointer(src))
+				dst = gio.DBusProxy{
 					Object: obj,
-				},
-				DBusInterface: gio.DBusInterface{
-					Object: obj,
-				},
-				Initable: gio.Initable{
-					Object: obj,
-				},
+					AsyncInitable: gio.AsyncInitable{
+						Object: obj,
+					},
+					DBusInterface: gio.DBusInterface{
+						Object: obj,
+					},
+					Initable: gio.Initable{
+						Object: obj,
+					},
+				}
 			}
-		}
-		_unlocked = append(_unlocked, dst)
-	})
+			_unlocked = append(_unlocked, dst)
+		})
+	}
 	_gint = int(_cret)
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _unlocked, _gint, _goerr
 }
@@ -1445,7 +1497,9 @@ func ServiceGetFinish(result gio.AsyncResulter) (*Service, error) {
 	var _goerr error      // out
 
 	_service = wrapService(externglib.AssumeOwnership(unsafe.Pointer(_cret)))
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _service, _goerr
 }
@@ -1477,7 +1531,9 @@ func ServiceGetSync(ctx context.Context, flags ServiceFlags) (*Service, error) {
 	var _goerr error      // out
 
 	_service = wrapService(externglib.AssumeOwnership(unsafe.Pointer(_cret)))
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _service, _goerr
 }
@@ -1509,8 +1565,10 @@ func ServiceOpen(ctx context.Context, serviceGtype externglib.Type, serviceBusNa
 		_arg4 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
 	_arg1 = C.GType(serviceGtype)
-	_arg2 = (*C.gchar)(unsafe.Pointer(C.CString(serviceBusName)))
-	defer C.free(unsafe.Pointer(_arg2))
+	if serviceBusName != "" {
+		_arg2 = (*C.gchar)(unsafe.Pointer(C.CString(serviceBusName)))
+		defer C.free(unsafe.Pointer(_arg2))
+	}
 	_arg3 = C.SecretServiceFlags(flags)
 	_arg5 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
 	_arg6 = C.gpointer(gbox.AssignOnce(callback))
@@ -1533,7 +1591,9 @@ func ServiceOpenFinish(result gio.AsyncResulter) (*Service, error) {
 	var _goerr error      // out
 
 	_service = wrapService(externglib.AssumeOwnership(unsafe.Pointer(_cret)))
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _service, _goerr
 }
@@ -1566,8 +1626,10 @@ func ServiceOpenSync(ctx context.Context, serviceGtype externglib.Type, serviceB
 		_arg4 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
 	_arg1 = C.GType(serviceGtype)
-	_arg2 = (*C.gchar)(unsafe.Pointer(C.CString(serviceBusName)))
-	defer C.free(unsafe.Pointer(_arg2))
+	if serviceBusName != "" {
+		_arg2 = (*C.gchar)(unsafe.Pointer(C.CString(serviceBusName)))
+		defer C.free(unsafe.Pointer(_arg2))
+	}
 	_arg3 = C.SecretServiceFlags(flags)
 
 	_cret = C.secret_service_open_sync(_arg1, _arg2, _arg3, _arg4, &_cerr)
@@ -1576,7 +1638,9 @@ func ServiceOpenSync(ctx context.Context, serviceGtype externglib.Type, serviceB
 	var _goerr error      // out
 
 	_service = wrapService(externglib.AssumeOwnership(unsafe.Pointer(_cret)))
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _service, _goerr
 }

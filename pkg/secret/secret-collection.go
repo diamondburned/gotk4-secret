@@ -178,7 +178,9 @@ func (self *Collection) DeleteFinish(result gio.AsyncResulter) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -204,7 +206,9 @@ func (self *Collection) DeleteSync(ctx context.Context) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -379,7 +383,9 @@ func (self *Collection) LoadItemsFinish(result gio.AsyncResulter) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -409,7 +415,9 @@ func (self *Collection) LoadItemsSync(ctx context.Context) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -499,7 +507,9 @@ func (self *Collection) SearchFinish(result gio.AsyncResulter) ([]Item, error) {
 		dst = *wrapItem(externglib.AssumeOwnership(unsafe.Pointer(src)))
 		_list = append(_list, dst)
 	})
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _list, _goerr
 }
@@ -561,7 +571,9 @@ func (self *Collection) SearchSync(ctx context.Context, schema *Schema, attribut
 		dst = *wrapItem(externglib.AssumeOwnership(unsafe.Pointer(src)))
 		_list = append(_list, dst)
 	})
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _list, _goerr
 }
@@ -604,7 +616,9 @@ func (self *Collection) SetLabelFinish(result gio.AsyncResulter) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -632,7 +646,9 @@ func (self *Collection) SetLabelSync(ctx context.Context, label string) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -668,8 +684,10 @@ func CollectionCreate(ctx context.Context, service *Service, label string, alias
 	_arg1 = (*C.SecretService)(unsafe.Pointer(service.Native()))
 	_arg2 = (*C.gchar)(unsafe.Pointer(C.CString(label)))
 	defer C.free(unsafe.Pointer(_arg2))
-	_arg3 = (*C.gchar)(unsafe.Pointer(C.CString(alias)))
-	defer C.free(unsafe.Pointer(_arg3))
+	if alias != "" {
+		_arg3 = (*C.gchar)(unsafe.Pointer(C.CString(alias)))
+		defer C.free(unsafe.Pointer(_arg3))
+	}
 	_arg4 = C.SecretCollectionCreateFlags(flags)
 	_arg6 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
 	_arg7 = C.gpointer(gbox.AssignOnce(callback))
@@ -692,7 +710,9 @@ func CollectionCreateFinish(result gio.AsyncResulter) (*Collection, error) {
 	var _goerr error            // out
 
 	_collection = wrapCollection(externglib.AssumeOwnership(unsafe.Pointer(_cret)))
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _collection, _goerr
 }
@@ -728,8 +748,10 @@ func CollectionCreateSync(ctx context.Context, service *Service, label string, a
 	_arg1 = (*C.SecretService)(unsafe.Pointer(service.Native()))
 	_arg2 = (*C.gchar)(unsafe.Pointer(C.CString(label)))
 	defer C.free(unsafe.Pointer(_arg2))
-	_arg3 = (*C.gchar)(unsafe.Pointer(C.CString(alias)))
-	defer C.free(unsafe.Pointer(_arg3))
+	if alias != "" {
+		_arg3 = (*C.gchar)(unsafe.Pointer(C.CString(alias)))
+		defer C.free(unsafe.Pointer(_arg3))
+	}
 	_arg4 = C.SecretCollectionCreateFlags(flags)
 
 	_cret = C.secret_collection_create_sync(_arg1, _arg2, _arg3, _arg4, _arg5, &_cerr)
@@ -738,7 +760,9 @@ func CollectionCreateSync(ctx context.Context, service *Service, label string, a
 	var _goerr error            // out
 
 	_collection = wrapCollection(externglib.AssumeOwnership(unsafe.Pointer(_cret)))
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _collection, _goerr
 }
@@ -788,7 +812,9 @@ func CollectionForAliasFinish(result gio.AsyncResulter) (*Collection, error) {
 	var _goerr error            // out
 
 	_collection = wrapCollection(externglib.AssumeOwnership(unsafe.Pointer(_cret)))
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _collection, _goerr
 }
@@ -824,7 +850,9 @@ func CollectionForAliasSync(ctx context.Context, service *Service, alias string,
 	var _goerr error            // out
 
 	_collection = wrapCollection(externglib.AssumeOwnership(unsafe.Pointer(_cret)))
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _collection, _goerr
 }

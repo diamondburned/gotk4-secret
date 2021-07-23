@@ -33,7 +33,9 @@ func PasswordClearFinish(result gio.AsyncResulter) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -109,7 +111,9 @@ func PasswordClearSync(ctx context.Context, schema *Schema, attributes map[strin
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -130,7 +134,9 @@ func PasswordLookupFinish(result gio.AsyncResulter) (string, error) {
 
 	_utf8 = C.GoString((*C.gchar)(unsafe.Pointer(_cret)))
 	defer C.free(unsafe.Pointer(_cret))
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _utf8, _goerr
 }
@@ -209,7 +215,9 @@ func PasswordLookupSync(ctx context.Context, schema *Schema, attributes map[stri
 
 	_utf8 = C.GoString((*C.gchar)(unsafe.Pointer(_cret)))
 	defer C.free(unsafe.Pointer(_cret))
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _utf8, _goerr
 }
@@ -235,7 +243,9 @@ func PasswordSearchFinish(result gio.AsyncResulter) ([]Retrievabler, error) {
 		dst = (gextras.CastObject(externglib.AssumeOwnership(unsafe.Pointer(src)))).(Retrievabler)
 		_list = append(_list, dst)
 	})
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _list, _goerr
 }
@@ -321,7 +331,9 @@ func PasswordSearchSync(ctx context.Context, schema *Schema, attributes map[stri
 		dst = (gextras.CastObject(externglib.AssumeOwnership(unsafe.Pointer(src)))).(Retrievabler)
 		_list = append(_list, dst)
 	})
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _list, _goerr
 }
@@ -338,7 +350,9 @@ func PasswordStoreFinish(result gio.AsyncResulter) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -379,8 +393,10 @@ func PasswordStore(ctx context.Context, schema *Schema, attributes map[string]st
 		vdst = (*C.gchar)(unsafe.Pointer(C.CString(vsrc)))
 		C.g_hash_table_insert(_arg2, C.gpointer(unsafe.Pointer(kdst)), C.gpointer(unsafe.Pointer(vdst)))
 	}
-	_arg3 = (*C.gchar)(unsafe.Pointer(C.CString(collection)))
-	defer C.free(unsafe.Pointer(_arg3))
+	if collection != "" {
+		_arg3 = (*C.gchar)(unsafe.Pointer(C.CString(collection)))
+		defer C.free(unsafe.Pointer(_arg3))
+	}
 	_arg4 = (*C.gchar)(unsafe.Pointer(C.CString(label)))
 	defer C.free(unsafe.Pointer(_arg4))
 	_arg5 = (*C.gchar)(unsafe.Pointer(C.CString(password)))
@@ -421,8 +437,10 @@ func PasswordStoreBinary(ctx context.Context, schema *Schema, attributes map[str
 		vdst = (*C.gchar)(unsafe.Pointer(C.CString(vsrc)))
 		C.g_hash_table_insert(_arg2, C.gpointer(unsafe.Pointer(kdst)), C.gpointer(unsafe.Pointer(vdst)))
 	}
-	_arg3 = (*C.gchar)(unsafe.Pointer(C.CString(collection)))
-	defer C.free(unsafe.Pointer(_arg3))
+	if collection != "" {
+		_arg3 = (*C.gchar)(unsafe.Pointer(C.CString(collection)))
+		defer C.free(unsafe.Pointer(_arg3))
+	}
 	_arg4 = (*C.gchar)(unsafe.Pointer(C.CString(label)))
 	defer C.free(unsafe.Pointer(_arg4))
 	_arg5 = (*C.SecretValue)(gextras.StructNative(unsafe.Pointer(value)))
@@ -465,8 +483,10 @@ func PasswordStoreBinarySync(ctx context.Context, schema *Schema, attributes map
 		C.g_hash_table_insert(_arg2, C.gpointer(unsafe.Pointer(kdst)), C.gpointer(unsafe.Pointer(vdst)))
 	}
 	defer C.g_hash_table_unref(_arg2)
-	_arg3 = (*C.gchar)(unsafe.Pointer(C.CString(collection)))
-	defer C.free(unsafe.Pointer(_arg3))
+	if collection != "" {
+		_arg3 = (*C.gchar)(unsafe.Pointer(C.CString(collection)))
+		defer C.free(unsafe.Pointer(_arg3))
+	}
 	_arg4 = (*C.gchar)(unsafe.Pointer(C.CString(label)))
 	defer C.free(unsafe.Pointer(_arg4))
 	_arg5 = (*C.SecretValue)(gextras.StructNative(unsafe.Pointer(value)))
@@ -475,7 +495,9 @@ func PasswordStoreBinarySync(ctx context.Context, schema *Schema, attributes map
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -519,8 +541,10 @@ func PasswordStoreSync(ctx context.Context, schema *Schema, attributes map[strin
 		C.g_hash_table_insert(_arg2, C.gpointer(unsafe.Pointer(kdst)), C.gpointer(unsafe.Pointer(vdst)))
 	}
 	defer C.g_hash_table_unref(_arg2)
-	_arg3 = (*C.gchar)(unsafe.Pointer(C.CString(collection)))
-	defer C.free(unsafe.Pointer(_arg3))
+	if collection != "" {
+		_arg3 = (*C.gchar)(unsafe.Pointer(C.CString(collection)))
+		defer C.free(unsafe.Pointer(_arg3))
+	}
 	_arg4 = (*C.gchar)(unsafe.Pointer(C.CString(label)))
 	defer C.free(unsafe.Pointer(_arg4))
 	_arg5 = (*C.gchar)(unsafe.Pointer(C.CString(password)))
@@ -530,7 +554,9 @@ func PasswordStoreSync(ctx context.Context, schema *Schema, attributes map[strin
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -539,8 +565,10 @@ func PasswordStoreSync(ctx context.Context, schema *Schema, attributes map[strin
 func PasswordWipe(password string) {
 	var _arg1 *C.gchar // out
 
-	_arg1 = (*C.gchar)(unsafe.Pointer(C.CString(password)))
-	defer C.free(unsafe.Pointer(_arg1))
+	if password != "" {
+		_arg1 = (*C.gchar)(unsafe.Pointer(C.CString(password)))
+		defer C.free(unsafe.Pointer(_arg1))
+	}
 
 	C.secret_password_wipe(_arg1)
 }

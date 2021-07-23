@@ -82,8 +82,10 @@ func (self *Prompt) Perform(ctx context.Context, windowId string, returnType *gl
 		defer runtime.KeepAlive(cancellable)
 		_arg3 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.gchar)(unsafe.Pointer(C.CString(windowId)))
-	defer C.free(unsafe.Pointer(_arg1))
+	if windowId != "" {
+		_arg1 = (*C.gchar)(unsafe.Pointer(C.CString(windowId)))
+		defer C.free(unsafe.Pointer(_arg1))
+	}
 	_arg2 = (*C.GVariantType)(gextras.StructNative(unsafe.Pointer(returnType)))
 	_arg4 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
 	_arg5 = C.gpointer(gbox.AssignOnce(callback))
@@ -116,7 +118,9 @@ func (self *Prompt) PerformFinish(result gio.AsyncResulter) (*glib.Variant, erro
 	runtime.SetFinalizer(_variant, func(v *glib.Variant) {
 		C.g_variant_unref((*C.GVariant)(gextras.StructNative(unsafe.Pointer(v))))
 	})
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _variant, _goerr
 }
@@ -148,8 +152,10 @@ func (self *Prompt) PerformSync(ctx context.Context, windowId string, returnType
 		defer runtime.KeepAlive(cancellable)
 		_arg2 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.gchar)(unsafe.Pointer(C.CString(windowId)))
-	defer C.free(unsafe.Pointer(_arg1))
+	if windowId != "" {
+		_arg1 = (*C.gchar)(unsafe.Pointer(C.CString(windowId)))
+		defer C.free(unsafe.Pointer(_arg1))
+	}
 	_arg3 = (*C.GVariantType)(gextras.StructNative(unsafe.Pointer(returnType)))
 
 	_cret = C.secret_prompt_perform_sync(_arg0, _arg1, _arg2, _arg3, &_cerr)
@@ -162,7 +168,9 @@ func (self *Prompt) PerformSync(ctx context.Context, windowId string, returnType
 	runtime.SetFinalizer(_variant, func(v *glib.Variant) {
 		C.g_variant_unref((*C.GVariant)(gextras.StructNative(unsafe.Pointer(v))))
 	})
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _variant, _goerr
 }
@@ -196,8 +204,10 @@ func (self *Prompt) Run(ctx context.Context, windowId string, returnType *glib.V
 		defer runtime.KeepAlive(cancellable)
 		_arg2 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.gchar)(unsafe.Pointer(C.CString(windowId)))
-	defer C.free(unsafe.Pointer(_arg1))
+	if windowId != "" {
+		_arg1 = (*C.gchar)(unsafe.Pointer(C.CString(windowId)))
+		defer C.free(unsafe.Pointer(_arg1))
+	}
 	_arg3 = (*C.GVariantType)(gextras.StructNative(unsafe.Pointer(returnType)))
 
 	_cret = C.secret_prompt_run(_arg0, _arg1, _arg2, _arg3, &_cerr)
@@ -210,7 +220,9 @@ func (self *Prompt) Run(ctx context.Context, windowId string, returnType *glib.V
 	runtime.SetFinalizer(_variant, func(v *glib.Variant) {
 		C.g_variant_unref((*C.GVariant)(gextras.StructNative(unsafe.Pointer(v))))
 	})
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _variant, _goerr
 }

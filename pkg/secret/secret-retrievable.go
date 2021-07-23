@@ -216,7 +216,9 @@ func (self *Retrievable) RetrieveSecretFinish(result gio.AsyncResulter) (*Value,
 	runtime.SetFinalizer(_value, func(v *Value) {
 		C.secret_value_unref((C.gpointer)(gextras.StructNative(unsafe.Pointer(v))))
 	})
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _value, _goerr
 }
@@ -251,7 +253,9 @@ func (self *Retrievable) RetrieveSecretSync(ctx context.Context) (*Value, error)
 	runtime.SetFinalizer(_value, func(v *Value) {
 		C.secret_value_unref((C.gpointer)(gextras.StructNative(unsafe.Pointer(v))))
 	})
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _value, _goerr
 }

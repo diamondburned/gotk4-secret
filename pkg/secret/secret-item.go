@@ -188,7 +188,9 @@ func (self *Item) DeleteFinish(result gio.AsyncResulter) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -214,7 +216,9 @@ func (self *Item) DeleteSync(ctx context.Context) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -445,7 +449,9 @@ func (self *Item) LoadSecretFinish(result gio.AsyncResulter) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -473,7 +479,9 @@ func (self *Item) LoadSecretSync(ctx context.Context) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -543,7 +551,9 @@ func (self *Item) SetAttributesFinish(result gio.AsyncResulter) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -586,7 +596,9 @@ func (self *Item) SetAttributesSync(ctx context.Context, schema *Schema, attribu
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -629,7 +641,9 @@ func (self *Item) SetLabelFinish(result gio.AsyncResulter) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -657,7 +671,9 @@ func (self *Item) SetLabelSync(ctx context.Context, label string) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -702,7 +718,9 @@ func (self *Item) SetSecretFinish(result gio.AsyncResulter) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -732,7 +750,9 @@ func (self *Item) SetSecretSync(ctx context.Context, value *Value) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -800,7 +820,9 @@ func ItemCreateFinish(result gio.AsyncResulter) (*Item, error) {
 	var _goerr error // out
 
 	_item = wrapItem(externglib.AssumeOwnership(unsafe.Pointer(_cret)))
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _item, _goerr
 }
@@ -854,7 +876,9 @@ func ItemCreateSync(ctx context.Context, collection *Collection, schema *Schema,
 	var _goerr error // out
 
 	_item = wrapItem(externglib.AssumeOwnership(unsafe.Pointer(_cret)))
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _item, _goerr
 }
@@ -903,7 +927,9 @@ func ItemLoadSecretsFinish(result gio.AsyncResulter) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
@@ -939,7 +965,9 @@ func ItemLoadSecretsSync(ctx context.Context, items []Item) error {
 
 	var _goerr error // out
 
-	_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	if _cerr != nil {
+		_goerr = gerror.Take(unsafe.Pointer(_cerr))
+	}
 
 	return _goerr
 }
