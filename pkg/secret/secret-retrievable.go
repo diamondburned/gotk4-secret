@@ -189,8 +189,10 @@ func (self *Retrievable) RetrieveSecret(ctx context.Context, callback gio.AsyncR
 		defer runtime.KeepAlive(cancellable)
 		_arg1 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg2 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
-	_arg3 = C.gpointer(gbox.AssignOnce(callback))
+	if callback != nil {
+		_arg2 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
+		_arg3 = C.gpointer(gbox.AssignOnce(callback))
+	}
 
 	C.secret_retrievable_retrieve_secret(_arg0, _arg1, _arg2, _arg3)
 }
@@ -211,11 +213,13 @@ func (self *Retrievable) RetrieveSecretFinish(result gio.AsyncResulter) (*Value,
 	var _value *Value // out
 	var _goerr error  // out
 
-	_value = (*Value)(gextras.NewStructNative(unsafe.Pointer(_cret)))
-	C.secret_value_ref(_cret)
-	runtime.SetFinalizer(_value, func(v *Value) {
-		C.secret_value_unref((C.gpointer)(gextras.StructNative(unsafe.Pointer(v))))
-	})
+	if _cret != nil {
+		_value = (*Value)(gextras.NewStructNative(unsafe.Pointer(_cret)))
+		C.secret_value_ref(_cret)
+		runtime.SetFinalizer(_value, func(v *Value) {
+			C.secret_value_unref((C.gpointer)(gextras.StructNative(unsafe.Pointer(v))))
+		})
+	}
 	if _cerr != nil {
 		_goerr = gerror.Take(unsafe.Pointer(_cerr))
 	}
@@ -248,11 +252,13 @@ func (self *Retrievable) RetrieveSecretSync(ctx context.Context) (*Value, error)
 	var _value *Value // out
 	var _goerr error  // out
 
-	_value = (*Value)(gextras.NewStructNative(unsafe.Pointer(_cret)))
-	C.secret_value_ref(_cret)
-	runtime.SetFinalizer(_value, func(v *Value) {
-		C.secret_value_unref((C.gpointer)(gextras.StructNative(unsafe.Pointer(v))))
-	})
+	if _cret != nil {
+		_value = (*Value)(gextras.NewStructNative(unsafe.Pointer(_cret)))
+		C.secret_value_ref(_cret)
+		runtime.SetFinalizer(_value, func(v *Value) {
+			C.secret_value_unref((C.gpointer)(gextras.StructNative(unsafe.Pointer(v))))
+		})
+	}
 	if _cerr != nil {
 		_goerr = gerror.Take(unsafe.Pointer(_cerr))
 	}

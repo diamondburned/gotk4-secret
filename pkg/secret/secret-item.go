@@ -169,8 +169,10 @@ func (self *Item) Delete(ctx context.Context, callback gio.AsyncReadyCallback) {
 		defer runtime.KeepAlive(cancellable)
 		_arg1 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg2 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
-	_arg3 = C.gpointer(gbox.AssignOnce(callback))
+	if callback != nil {
+		_arg2 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
+		_arg3 = C.gpointer(gbox.AssignOnce(callback))
+	}
 
 	C.secret_item_delete(_arg0, _arg1, _arg2, _arg3)
 }
@@ -361,8 +363,10 @@ func (self *Item) SchemaName() string {
 
 	var _utf8 string // out
 
-	_utf8 = C.GoString((*C.gchar)(unsafe.Pointer(_cret)))
-	defer C.free(unsafe.Pointer(_cret))
+	if _cret != nil {
+		_utf8 = C.GoString((*C.gchar)(unsafe.Pointer(_cret)))
+		defer C.free(unsafe.Pointer(_cret))
+	}
 
 	return _utf8
 }
@@ -381,11 +385,13 @@ func (self *Item) Secret() *Value {
 
 	var _value *Value // out
 
-	_value = (*Value)(gextras.NewStructNative(unsafe.Pointer(_cret)))
-	C.secret_value_ref(_cret)
-	runtime.SetFinalizer(_value, func(v *Value) {
-		C.secret_value_unref((C.gpointer)(gextras.StructNative(unsafe.Pointer(v))))
-	})
+	if _cret != nil {
+		_value = (*Value)(gextras.NewStructNative(unsafe.Pointer(_cret)))
+		C.secret_value_ref(_cret)
+		runtime.SetFinalizer(_value, func(v *Value) {
+			C.secret_value_unref((C.gpointer)(gextras.StructNative(unsafe.Pointer(v))))
+		})
+	}
 
 	return _value
 }
@@ -426,8 +432,10 @@ func (self *Item) LoadSecret(ctx context.Context, callback gio.AsyncReadyCallbac
 		defer runtime.KeepAlive(cancellable)
 		_arg1 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg2 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
-	_arg3 = C.gpointer(gbox.AssignOnce(callback))
+	if callback != nil {
+		_arg2 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
+		_arg3 = C.gpointer(gbox.AssignOnce(callback))
+	}
 
 	C.secret_item_load_secret(_arg0, _arg1, _arg2, _arg3)
 }
@@ -520,7 +528,9 @@ func (self *Item) SetAttributes(ctx context.Context, schema *Schema, attributes 
 		defer runtime.KeepAlive(cancellable)
 		_arg3 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	if schema != nil {
+		_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	}
 	_arg2 = C.g_hash_table_new_full(nil, nil, (*[0]byte)(C.free), (*[0]byte)(C.free))
 	for ksrc, vsrc := range attributes {
 		var kdst *C.gchar // out
@@ -532,8 +542,10 @@ func (self *Item) SetAttributes(ctx context.Context, schema *Schema, attributes 
 		C.g_hash_table_insert(_arg2, C.gpointer(unsafe.Pointer(kdst)), C.gpointer(unsafe.Pointer(vdst)))
 	}
 	defer C.g_hash_table_unref(_arg2)
-	_arg4 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
-	_arg5 = C.gpointer(gbox.AssignOnce(callback))
+	if callback != nil {
+		_arg4 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
+		_arg5 = C.gpointer(gbox.AssignOnce(callback))
+	}
 
 	C.secret_item_set_attributes(_arg0, _arg1, _arg2, _arg3, _arg4, _arg5)
 }
@@ -579,7 +591,9 @@ func (self *Item) SetAttributesSync(ctx context.Context, schema *Schema, attribu
 		defer runtime.KeepAlive(cancellable)
 		_arg3 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	if schema != nil {
+		_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	}
 	_arg2 = C.g_hash_table_new_full(nil, nil, (*[0]byte)(C.free), (*[0]byte)(C.free))
 	for ksrc, vsrc := range attributes {
 		var kdst *C.gchar // out
@@ -621,8 +635,10 @@ func (self *Item) SetLabel(ctx context.Context, label string, callback gio.Async
 	}
 	_arg1 = (*C.gchar)(unsafe.Pointer(C.CString(label)))
 	defer C.free(unsafe.Pointer(_arg1))
-	_arg3 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
-	_arg4 = C.gpointer(gbox.AssignOnce(callback))
+	if callback != nil {
+		_arg3 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
+		_arg4 = C.gpointer(gbox.AssignOnce(callback))
+	}
 
 	C.secret_item_set_label(_arg0, _arg1, _arg2, _arg3, _arg4)
 }
@@ -698,8 +714,10 @@ func (self *Item) SetSecret(ctx context.Context, value *Value, callback gio.Asyn
 		_arg2 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
 	_arg1 = (*C.SecretValue)(gextras.StructNative(unsafe.Pointer(value)))
-	_arg3 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
-	_arg4 = C.gpointer(gbox.AssignOnce(callback))
+	if callback != nil {
+		_arg3 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
+		_arg4 = C.gpointer(gbox.AssignOnce(callback))
+	}
 
 	C.secret_item_set_secret(_arg0, _arg1, _arg2, _arg3, _arg4)
 }
@@ -783,7 +801,9 @@ func ItemCreate(ctx context.Context, collection *Collection, schema *Schema, att
 		_arg7 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
 	_arg1 = (*C.SecretCollection)(unsafe.Pointer(collection.Native()))
-	_arg2 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	if schema != nil {
+		_arg2 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	}
 	_arg3 = C.g_hash_table_new_full(nil, nil, (*[0]byte)(C.free), (*[0]byte)(C.free))
 	for ksrc, vsrc := range attributes {
 		var kdst *C.gchar // out
@@ -799,8 +819,10 @@ func ItemCreate(ctx context.Context, collection *Collection, schema *Schema, att
 	defer C.free(unsafe.Pointer(_arg4))
 	_arg5 = (*C.SecretValue)(gextras.StructNative(unsafe.Pointer(value)))
 	_arg6 = C.SecretItemCreateFlags(flags)
-	_arg8 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
-	_arg9 = C.gpointer(gbox.AssignOnce(callback))
+	if callback != nil {
+		_arg8 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
+		_arg9 = C.gpointer(gbox.AssignOnce(callback))
+	}
 
 	C.secret_item_create(_arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, _arg8, _arg9)
 }
@@ -853,7 +875,9 @@ func ItemCreateSync(ctx context.Context, collection *Collection, schema *Schema,
 		_arg7 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
 	_arg1 = (*C.SecretCollection)(unsafe.Pointer(collection.Native()))
-	_arg2 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	if schema != nil {
+		_arg2 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	}
 	_arg3 = C.g_hash_table_new_full(nil, nil, (*[0]byte)(C.free), (*[0]byte)(C.free))
 	for ksrc, vsrc := range attributes {
 		var kdst *C.gchar // out
@@ -907,8 +931,10 @@ func ItemLoadSecrets(ctx context.Context, items []Item, callback gio.AsyncReadyC
 		_arg1 = C.g_list_prepend(_arg1, C.gpointer(unsafe.Pointer(dst)))
 	}
 	defer C.g_list_free(_arg1)
-	_arg3 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
-	_arg4 = C.gpointer(gbox.AssignOnce(callback))
+	if callback != nil {
+		_arg3 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
+		_arg4 = C.gpointer(gbox.AssignOnce(callback))
+	}
 
 	C.secret_item_load_secrets(_arg1, _arg2, _arg3, _arg4)
 }

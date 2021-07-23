@@ -59,7 +59,9 @@ func PasswordClear(ctx context.Context, schema *Schema, attributes map[string]st
 		defer runtime.KeepAlive(cancellable)
 		_arg3 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	if schema != nil {
+		_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	}
 	_arg2 = C.g_hash_table_new_full(nil, nil, (*[0]byte)(C.free), (*[0]byte)(C.free))
 	for ksrc, vsrc := range attributes {
 		var kdst *C.gchar // out
@@ -68,8 +70,10 @@ func PasswordClear(ctx context.Context, schema *Schema, attributes map[string]st
 		vdst = (*C.gchar)(unsafe.Pointer(C.CString(vsrc)))
 		C.g_hash_table_insert(_arg2, C.gpointer(unsafe.Pointer(kdst)), C.gpointer(unsafe.Pointer(vdst)))
 	}
-	_arg4 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
-	_arg5 = C.gpointer(gbox.AssignOnce(callback))
+	if callback != nil {
+		_arg4 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
+		_arg5 = C.gpointer(gbox.AssignOnce(callback))
+	}
 
 	C.secret_password_clearv(_arg1, _arg2, _arg3, _arg4, _arg5)
 }
@@ -94,7 +98,9 @@ func PasswordClearSync(ctx context.Context, schema *Schema, attributes map[strin
 		defer runtime.KeepAlive(cancellable)
 		_arg3 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	if schema != nil {
+		_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	}
 	_arg2 = C.g_hash_table_new_full(nil, nil, (*[0]byte)(C.free), (*[0]byte)(C.free))
 	for ksrc, vsrc := range attributes {
 		var kdst *C.gchar // out
@@ -160,7 +166,9 @@ func PasswordLookup(ctx context.Context, schema *Schema, attributes map[string]s
 		defer runtime.KeepAlive(cancellable)
 		_arg3 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	if schema != nil {
+		_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	}
 	_arg2 = C.g_hash_table_new_full(nil, nil, (*[0]byte)(C.free), (*[0]byte)(C.free))
 	for ksrc, vsrc := range attributes {
 		var kdst *C.gchar // out
@@ -169,8 +177,10 @@ func PasswordLookup(ctx context.Context, schema *Schema, attributes map[string]s
 		vdst = (*C.gchar)(unsafe.Pointer(C.CString(vsrc)))
 		C.g_hash_table_insert(_arg2, C.gpointer(unsafe.Pointer(kdst)), C.gpointer(unsafe.Pointer(vdst)))
 	}
-	_arg4 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
-	_arg5 = C.gpointer(gbox.AssignOnce(callback))
+	if callback != nil {
+		_arg4 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
+		_arg5 = C.gpointer(gbox.AssignOnce(callback))
+	}
 
 	C.secret_password_lookupv(_arg1, _arg2, _arg3, _arg4, _arg5)
 }
@@ -195,7 +205,9 @@ func PasswordLookupSync(ctx context.Context, schema *Schema, attributes map[stri
 		defer runtime.KeepAlive(cancellable)
 		_arg3 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	if schema != nil {
+		_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	}
 	_arg2 = C.g_hash_table_new_full(nil, nil, (*[0]byte)(C.free), (*[0]byte)(C.free))
 	for ksrc, vsrc := range attributes {
 		var kdst *C.gchar // out
@@ -268,7 +280,9 @@ func PasswordSearch(ctx context.Context, schema *Schema, attributes map[string]s
 		defer runtime.KeepAlive(cancellable)
 		_arg4 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	if schema != nil {
+		_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	}
 	_arg2 = C.g_hash_table_new_full(nil, nil, (*[0]byte)(C.free), (*[0]byte)(C.free))
 	for ksrc, vsrc := range attributes {
 		var kdst *C.gchar // out
@@ -278,8 +292,10 @@ func PasswordSearch(ctx context.Context, schema *Schema, attributes map[string]s
 		C.g_hash_table_insert(_arg2, C.gpointer(unsafe.Pointer(kdst)), C.gpointer(unsafe.Pointer(vdst)))
 	}
 	_arg3 = C.SecretSearchFlags(flags)
-	_arg5 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
-	_arg6 = C.gpointer(gbox.AssignOnce(callback))
+	if callback != nil {
+		_arg5 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
+		_arg6 = C.gpointer(gbox.AssignOnce(callback))
+	}
 
 	C.secret_password_searchv(_arg1, _arg2, _arg3, _arg4, _arg5, _arg6)
 }
@@ -305,7 +321,9 @@ func PasswordSearchSync(ctx context.Context, schema *Schema, attributes map[stri
 		defer runtime.KeepAlive(cancellable)
 		_arg4 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	if schema != nil {
+		_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	}
 	_arg2 = C.g_hash_table_new_full(nil, nil, (*[0]byte)(C.free), (*[0]byte)(C.free))
 	for ksrc, vsrc := range attributes {
 		var kdst *C.gchar // out
@@ -384,7 +402,9 @@ func PasswordStore(ctx context.Context, schema *Schema, attributes map[string]st
 		defer runtime.KeepAlive(cancellable)
 		_arg6 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	if schema != nil {
+		_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	}
 	_arg2 = C.g_hash_table_new_full(nil, nil, (*[0]byte)(C.free), (*[0]byte)(C.free))
 	for ksrc, vsrc := range attributes {
 		var kdst *C.gchar // out
@@ -401,8 +421,10 @@ func PasswordStore(ctx context.Context, schema *Schema, attributes map[string]st
 	defer C.free(unsafe.Pointer(_arg4))
 	_arg5 = (*C.gchar)(unsafe.Pointer(C.CString(password)))
 	defer C.free(unsafe.Pointer(_arg5))
-	_arg7 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
-	_arg8 = C.gpointer(gbox.AssignOnce(callback))
+	if callback != nil {
+		_arg7 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
+		_arg8 = C.gpointer(gbox.AssignOnce(callback))
+	}
 
 	C.secret_password_storev(_arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, _arg8)
 }
@@ -428,7 +450,9 @@ func PasswordStoreBinary(ctx context.Context, schema *Schema, attributes map[str
 		defer runtime.KeepAlive(cancellable)
 		_arg6 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	if schema != nil {
+		_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	}
 	_arg2 = C.g_hash_table_new_full(nil, nil, (*[0]byte)(C.free), (*[0]byte)(C.free))
 	for ksrc, vsrc := range attributes {
 		var kdst *C.gchar // out
@@ -444,8 +468,10 @@ func PasswordStoreBinary(ctx context.Context, schema *Schema, attributes map[str
 	_arg4 = (*C.gchar)(unsafe.Pointer(C.CString(label)))
 	defer C.free(unsafe.Pointer(_arg4))
 	_arg5 = (*C.SecretValue)(gextras.StructNative(unsafe.Pointer(value)))
-	_arg7 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
-	_arg8 = C.gpointer(gbox.AssignOnce(callback))
+	if callback != nil {
+		_arg7 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
+		_arg8 = C.gpointer(gbox.AssignOnce(callback))
+	}
 
 	C.secret_password_storev_binary(_arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, _arg8)
 }
@@ -471,7 +497,9 @@ func PasswordStoreBinarySync(ctx context.Context, schema *Schema, attributes map
 		defer runtime.KeepAlive(cancellable)
 		_arg6 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	if schema != nil {
+		_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	}
 	_arg2 = C.g_hash_table_new_full(nil, nil, (*[0]byte)(C.free), (*[0]byte)(C.free))
 	for ksrc, vsrc := range attributes {
 		var kdst *C.gchar // out
@@ -529,7 +557,9 @@ func PasswordStoreSync(ctx context.Context, schema *Schema, attributes map[strin
 		defer runtime.KeepAlive(cancellable)
 		_arg6 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	if schema != nil {
+		_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	}
 	_arg2 = C.g_hash_table_new_full(nil, nil, (*[0]byte)(C.free), (*[0]byte)(C.free))
 	for ksrc, vsrc := range attributes {
 		var kdst *C.gchar // out

@@ -159,8 +159,10 @@ func (self *Collection) Delete(ctx context.Context, callback gio.AsyncReadyCallb
 		defer runtime.KeepAlive(cancellable)
 		_arg1 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg2 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
-	_arg3 = C.gpointer(gbox.AssignOnce(callback))
+	if callback != nil {
+		_arg2 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
+		_arg3 = C.gpointer(gbox.AssignOnce(callback))
+	}
 
 	C.secret_collection_delete(_arg0, _arg1, _arg2, _arg3)
 }
@@ -363,8 +365,10 @@ func (self *Collection) LoadItems(ctx context.Context, callback gio.AsyncReadyCa
 		defer runtime.KeepAlive(cancellable)
 		_arg1 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg2 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
-	_arg3 = C.gpointer(gbox.AssignOnce(callback))
+	if callback != nil {
+		_arg2 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
+		_arg3 = C.gpointer(gbox.AssignOnce(callback))
+	}
 
 	C.secret_collection_load_items(_arg0, _arg1, _arg2, _arg3)
 }
@@ -465,7 +469,9 @@ func (self *Collection) Search(ctx context.Context, schema *Schema, attributes m
 		defer runtime.KeepAlive(cancellable)
 		_arg4 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	if schema != nil {
+		_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	}
 	_arg2 = C.g_hash_table_new_full(nil, nil, (*[0]byte)(C.free), (*[0]byte)(C.free))
 	for ksrc, vsrc := range attributes {
 		var kdst *C.gchar // out
@@ -478,8 +484,10 @@ func (self *Collection) Search(ctx context.Context, schema *Schema, attributes m
 	}
 	defer C.g_hash_table_unref(_arg2)
 	_arg3 = C.SecretSearchFlags(flags)
-	_arg5 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
-	_arg6 = C.gpointer(gbox.AssignOnce(callback))
+	if callback != nil {
+		_arg5 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
+		_arg6 = C.gpointer(gbox.AssignOnce(callback))
+	}
 
 	C.secret_collection_search(_arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6)
 }
@@ -545,7 +553,9 @@ func (self *Collection) SearchSync(ctx context.Context, schema *Schema, attribut
 		defer runtime.KeepAlive(cancellable)
 		_arg4 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	if schema != nil {
+		_arg1 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
+	}
 	_arg2 = C.g_hash_table_new_full(nil, nil, (*[0]byte)(C.free), (*[0]byte)(C.free))
 	for ksrc, vsrc := range attributes {
 		var kdst *C.gchar // out
@@ -596,8 +606,10 @@ func (self *Collection) SetLabel(ctx context.Context, label string, callback gio
 	}
 	_arg1 = (*C.gchar)(unsafe.Pointer(C.CString(label)))
 	defer C.free(unsafe.Pointer(_arg1))
-	_arg3 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
-	_arg4 = C.gpointer(gbox.AssignOnce(callback))
+	if callback != nil {
+		_arg3 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
+		_arg4 = C.gpointer(gbox.AssignOnce(callback))
+	}
 
 	C.secret_collection_set_label(_arg0, _arg1, _arg2, _arg3, _arg4)
 }
@@ -681,7 +693,9 @@ func CollectionCreate(ctx context.Context, service *Service, label string, alias
 		defer runtime.KeepAlive(cancellable)
 		_arg5 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+	if service != nil {
+		_arg1 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+	}
 	_arg2 = (*C.gchar)(unsafe.Pointer(C.CString(label)))
 	defer C.free(unsafe.Pointer(_arg2))
 	if alias != "" {
@@ -689,8 +703,10 @@ func CollectionCreate(ctx context.Context, service *Service, label string, alias
 		defer C.free(unsafe.Pointer(_arg3))
 	}
 	_arg4 = C.SecretCollectionCreateFlags(flags)
-	_arg6 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
-	_arg7 = C.gpointer(gbox.AssignOnce(callback))
+	if callback != nil {
+		_arg6 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
+		_arg7 = C.gpointer(gbox.AssignOnce(callback))
+	}
 
 	C.secret_collection_create(_arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7)
 }
@@ -745,7 +761,9 @@ func CollectionCreateSync(ctx context.Context, service *Service, label string, a
 		defer runtime.KeepAlive(cancellable)
 		_arg5 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+	if service != nil {
+		_arg1 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+	}
 	_arg2 = (*C.gchar)(unsafe.Pointer(C.CString(label)))
 	defer C.free(unsafe.Pointer(_arg2))
 	if alias != "" {
@@ -787,12 +805,16 @@ func CollectionForAlias(ctx context.Context, service *Service, alias string, fla
 		defer runtime.KeepAlive(cancellable)
 		_arg4 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+	if service != nil {
+		_arg1 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+	}
 	_arg2 = (*C.gchar)(unsafe.Pointer(C.CString(alias)))
 	defer C.free(unsafe.Pointer(_arg2))
 	_arg3 = C.SecretCollectionFlags(flags)
-	_arg5 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
-	_arg6 = C.gpointer(gbox.AssignOnce(callback))
+	if callback != nil {
+		_arg5 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
+		_arg6 = C.gpointer(gbox.AssignOnce(callback))
+	}
 
 	C.secret_collection_for_alias(_arg1, _arg2, _arg3, _arg4, _arg5, _arg6)
 }
@@ -839,7 +861,9 @@ func CollectionForAliasSync(ctx context.Context, service *Service, alias string,
 		defer runtime.KeepAlive(cancellable)
 		_arg4 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+	if service != nil {
+		_arg1 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+	}
 	_arg2 = (*C.gchar)(unsafe.Pointer(C.CString(alias)))
 	defer C.free(unsafe.Pointer(_arg2))
 	_arg3 = C.SecretCollectionFlags(flags)

@@ -87,8 +87,10 @@ func (self *Prompt) Perform(ctx context.Context, windowId string, returnType *gl
 		defer C.free(unsafe.Pointer(_arg1))
 	}
 	_arg2 = (*C.GVariantType)(gextras.StructNative(unsafe.Pointer(returnType)))
-	_arg4 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
-	_arg5 = C.gpointer(gbox.AssignOnce(callback))
+	if callback != nil {
+		_arg4 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
+		_arg5 = C.gpointer(gbox.AssignOnce(callback))
+	}
 
 	C.secret_prompt_perform(_arg0, _arg1, _arg2, _arg3, _arg4, _arg5)
 }
