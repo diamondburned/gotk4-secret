@@ -4,15 +4,17 @@ package secret
 
 import (
 	"fmt"
+	"runtime"
 	"strings"
 	"unsafe"
 
 	"github.com/diamondburned/gotk4/pkg/core/gextras"
-	externglib "github.com/gotk3/gotk3/glib"
+	externglib "github.com/diamondburned/gotk4/pkg/core/glib"
 )
 
 // #cgo pkg-config: libsecret-1
 // #cgo CFLAGS: -Wno-deprecated-declarations
+// #include <stdlib.h>
 // #include <glib-object.h>
 // #include <libsecret/secret.h>
 import "C"
@@ -29,19 +31,19 @@ func init() {
 // SchemaAttributeType: type of an attribute in a Schema. Attributes are stored
 // as strings in the Secret Service, and the attribute types simply define
 // standard ways to store integer and boolean values as strings.
-type SchemaAttributeType int
+type SchemaAttributeType C.gint
 
 const (
-	// SchemaAttributeString: utf-8 string attribute
+	// SchemaAttributeString: utf-8 string attribute.
 	SchemaAttributeString SchemaAttributeType = iota
-	// SchemaAttributeInteger attribute, stored as a decimal
+	// SchemaAttributeInteger: integer attribute, stored as a decimal.
 	SchemaAttributeInteger
-	// SchemaAttributeBoolean attribute, stored as 'true' or 'false'
+	// SchemaAttributeBoolean: boolean attribute, stored as 'true' or 'false'.
 	SchemaAttributeBoolean
 )
 
 func marshalSchemaAttributeType(p uintptr) (interface{}, error) {
-	return SchemaAttributeType(C.g_value_get_enum((*C.GValue)(unsafe.Pointer(p)))), nil
+	return SchemaAttributeType(externglib.ValueFromNative(unsafe.Pointer(p)).Enum()), nil
 }
 
 // String returns the name in string for SchemaAttributeType.
@@ -59,18 +61,18 @@ func (s SchemaAttributeType) String() string {
 }
 
 // SchemaFlags flags for a Schema definition.
-type SchemaFlags int
+type SchemaFlags C.guint
 
 const (
-	// SchemaNone: no flags for the schema
+	// SchemaNone: no flags for the schema.
 	SchemaNone SchemaFlags = 0b0
 	// SchemaDontMatchName: don't match the schema name when looking up or
-	// removing passwords
+	// removing passwords.
 	SchemaDontMatchName SchemaFlags = 0b10
 )
 
 func marshalSchemaFlags(p uintptr) (interface{}, error) {
-	return SchemaFlags(C.g_value_get_enum((*C.GValue)(unsafe.Pointer(p)))), nil
+	return SchemaFlags(externglib.ValueFromNative(unsafe.Pointer(p)).Flags()), nil
 }
 
 // String returns the names in string for SchemaFlags.
@@ -101,6 +103,11 @@ func (s SchemaFlags) String() string {
 	return strings.TrimSuffix(builder.String(), "|")
 }
 
+// Has returns true if s contains other.
+func (s SchemaFlags) Has(other SchemaFlags) bool {
+	return (s & other) == other
+}
+
 // Schema represents a set of attributes that are stored with an item. These
 // schemas are used for interoperability between various services storing the
 // same types of items.
@@ -126,56 +133,112 @@ func (s SchemaFlags) String() string {
 // only the schema's attributes are matched. This is useful when you are looking
 // up items that are not stored by the libsecret library. Other libraries such
 // as libgnome-keyring don't store the schema name.
+//
+// An instance of this type is always passed by reference.
 type Schema struct {
-	nocopy gextras.NoCopy
+	*schema
+}
+
+// schema is the struct that's finalized.
+type schema struct {
 	native *C.SecretSchema
 }
 
 func marshalSchema(p uintptr) (interface{}, error) {
-	b := C.g_value_get_boxed((*C.GValue)(unsafe.Pointer(p)))
-	return &Schema{native: (*C.SecretSchema)(unsafe.Pointer(b))}, nil
+	b := externglib.ValueFromNative(unsafe.Pointer(p)).Boxed()
+	return &Schema{&schema{(*C.SecretSchema)(b)}}, nil
 }
 
-// Name: dotted name of the schema
+// NewSchema constructs a struct Schema.
+func NewSchema(name string, flags SchemaFlags, attributeNamesAndTypes map[string]SchemaAttributeType) *Schema {
+	var _arg1 *C.gchar            // out
+	var _arg2 C.SecretSchemaFlags // out
+	var _arg3 *C.GHashTable       // out
+	var _cret *C.SecretSchema     // in
+
+	_arg1 = (*C.gchar)(unsafe.Pointer(C.CString(name)))
+	defer C.free(unsafe.Pointer(_arg1))
+	_arg2 = C.SecretSchemaFlags(flags)
+	_arg3 = C.g_hash_table_new_full(nil, nil, (*[0]byte)(C.free), (*[0]byte)(C.free))
+	for ksrc, vsrc := range attributeNamesAndTypes {
+		var kdst *C.gchar                     // out
+		var vdst *C.SecretSchemaAttributeType // out
+		kdst = (*C.gchar)(unsafe.Pointer(C.CString(ksrc)))
+		defer C.free(unsafe.Pointer(kdst))
+		vdst = (*C.SecretSchemaAttributeType)(unsafe.Pointer(vsrc))
+		C.g_hash_table_insert(_arg3, C.gpointer(unsafe.Pointer(kdst)), C.gpointer(unsafe.Pointer(vdst)))
+	}
+	defer C.g_hash_table_unref(_arg3)
+
+	_cret = C.secret_schema_newv(_arg1, _arg2, _arg3)
+	runtime.KeepAlive(name)
+	runtime.KeepAlive(flags)
+	runtime.KeepAlive(attributeNamesAndTypes)
+
+	var _schema *Schema // out
+
+	_schema = (*Schema)(gextras.NewStructNative(unsafe.Pointer(_cret)))
+	runtime.SetFinalizer(
+		gextras.StructIntern(unsafe.Pointer(_schema)),
+		func(intern *struct{ C unsafe.Pointer }) {
+			C.secret_schema_unref((*C.SecretSchema)(intern.C))
+		},
+	)
+
+	return _schema
+}
+
+// Name: dotted name of the schema.
 func (s *Schema) Name() string {
 	var v string // out
 	v = C.GoString((*C.gchar)(unsafe.Pointer(s.native.name)))
 	return v
 }
 
-// Flags flags for the schema
+// Flags flags for the schema.
 func (s *Schema) Flags() SchemaFlags {
 	var v SchemaFlags // out
 	v = SchemaFlags(s.native.flags)
 	return v
 }
 
-// Attributes: attribute names and types of those attributes
+// Attributes: attribute names and types of those attributes.
 func (s *Schema) Attributes() [32]SchemaAttribute {
 	var v [32]SchemaAttribute // out
-	v = *(*[32]SchemaAttribute)(unsafe.Pointer(&s.native.attributes))
+	{
+		src := &s.native.attributes
+		for i := 0; i < 32; i++ {
+			v[i] = *(*SchemaAttribute)(gextras.NewStructNative(unsafe.Pointer((&src[i]))))
+		}
+	}
 	return v
 }
 
 // SchemaAttribute: attribute in a Schema.
+//
+// An instance of this type is always passed by reference.
 type SchemaAttribute struct {
-	nocopy gextras.NoCopy
+	*schemaAttribute
+}
+
+// schemaAttribute is the struct that's finalized.
+type schemaAttribute struct {
 	native *C.SecretSchemaAttribute
 }
 
 func marshalSchemaAttribute(p uintptr) (interface{}, error) {
-	b := C.g_value_get_boxed((*C.GValue)(unsafe.Pointer(p)))
-	return &SchemaAttribute{native: (*C.SecretSchemaAttribute)(unsafe.Pointer(b))}, nil
+	b := externglib.ValueFromNative(unsafe.Pointer(p)).Boxed()
+	return &SchemaAttribute{&schemaAttribute{(*C.SecretSchemaAttribute)(b)}}, nil
 }
 
-// Name: name of the attribute
+// Name: name of the attribute.
 func (s *SchemaAttribute) Name() string {
 	var v string // out
 	v = C.GoString((*C.gchar)(unsafe.Pointer(s.native.name)))
 	return v
 }
 
-// Type: type of the attribute
+// Type: type of the attribute.
 func (s *SchemaAttribute) Type() SchemaAttributeType {
 	var v SchemaAttributeType // out
 	v = SchemaAttributeType(s.native._type)

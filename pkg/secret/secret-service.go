@@ -13,13 +13,14 @@ import (
 	"github.com/diamondburned/gotk4/pkg/core/gcancel"
 	"github.com/diamondburned/gotk4/pkg/core/gerror"
 	"github.com/diamondburned/gotk4/pkg/core/gextras"
+	externglib "github.com/diamondburned/gotk4/pkg/core/glib"
 	"github.com/diamondburned/gotk4/pkg/gio/v2"
 	"github.com/diamondburned/gotk4/pkg/glib/v2"
-	externglib "github.com/gotk3/gotk3/glib"
 )
 
 // #cgo pkg-config: libsecret-1
 // #cgo CFLAGS: -Wno-deprecated-declarations
+// #include <stdlib.h>
 // #include <glib-object.h>
 // #include <libsecret/secret.h>
 // void _gotk4_gio2_AsyncReadyCallback(GObject*, GAsyncResult*, gpointer);
@@ -34,20 +35,20 @@ func init() {
 
 // ServiceFlags flags which determine which parts of the Service proxy are
 // initialized during a secret_service_get() or secret_service_open() operation.
-type ServiceFlags int
+type ServiceFlags C.guint
 
 const (
-	// ServiceNone: no flags for initializing the Service
+	// ServiceNone: no flags for initializing the Service.
 	ServiceNone ServiceFlags = 0b0
 	// ServiceOpenSession: establish a session for transfer of secrets while
-	// initializing the Service
+	// initializing the Service.
 	ServiceOpenSession ServiceFlags = 0b10
-	// ServiceLoadCollections: load collections while initializing the Service
+	// ServiceLoadCollections: load collections while initializing the Service.
 	ServiceLoadCollections ServiceFlags = 0b100
 )
 
 func marshalServiceFlags(p uintptr) (interface{}, error) {
-	return ServiceFlags(C.g_value_get_enum((*C.GValue)(unsafe.Pointer(p)))), nil
+	return ServiceFlags(externglib.ValueFromNative(unsafe.Pointer(p)).Flags()), nil
 }
 
 // String returns the names in string for ServiceFlags.
@@ -78,6 +79,11 @@ func (s ServiceFlags) String() string {
 	}
 
 	return strings.TrimSuffix(builder.String(), "|")
+}
+
+// Has returns true if s contains other.
+func (s ServiceFlags) Has(other ServiceFlags) bool {
+	return (s & other) == other
 }
 
 // ServiceOverrider contains methods that are overridable.
@@ -121,6 +127,10 @@ type Service struct {
 	gio.DBusProxy
 }
 
+var (
+	_ externglib.Objector = (*Service)(nil)
+)
+
 func wrapService(obj *externglib.Object) *Service {
 	return &Service{
 		DBusProxy: gio.DBusProxy{
@@ -139,9 +149,7 @@ func wrapService(obj *externglib.Object) *Service {
 }
 
 func marshalServicer(p uintptr) (interface{}, error) {
-	val := C.g_value_get_object((*C.GValue)(unsafe.Pointer(p)))
-	obj := externglib.Take(unsafe.Pointer(val))
-	return wrapService(obj), nil
+	return wrapService(externglib.ValueFromNative(unsafe.Pointer(p)).Object()), nil
 }
 
 // Clear: remove unlocked items which match the attributes from the secret
@@ -153,6 +161,14 @@ func marshalServicer(p uintptr) (interface{}, error) {
 // default Service proxy.
 //
 // This method will return immediately and complete asynchronously.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - schema for the attributes.
+//    - attributes: attribute keys and values.
+//    - callback: called when the operation completes.
+//
 func (service *Service) Clear(ctx context.Context, schema *Schema, attributes map[string]string, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretService      // out
 	var _arg3 *C.GCancellable       // out
@@ -189,10 +205,20 @@ func (service *Service) Clear(ctx context.Context, schema *Schema, attributes ma
 	}
 
 	C.secret_service_clear(_arg0, _arg1, _arg2, _arg3, _arg4, _arg5)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
+	runtime.KeepAlive(callback)
 }
 
 // ClearFinish: finish asynchronous operation to remove items from the secret
 // service.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to the callback.
+//
 func (service *Service) ClearFinish(result gio.AsyncResulter) error {
 	var _arg0 *C.SecretService // out
 	var _arg1 *C.GAsyncResult  // out
@@ -204,6 +230,8 @@ func (service *Service) ClearFinish(result gio.AsyncResulter) error {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	C.secret_service_clear_finish(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(result)
 
 	var _goerr error // out
 
@@ -224,6 +252,13 @@ func (service *Service) ClearFinish(result gio.AsyncResulter) error {
 //
 // This method may block indefinitely and should not be used in user interface
 // threads.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - schema for the attributes.
+//    - attributes: attribute keys and values.
+//
 func (service *Service) ClearSync(ctx context.Context, schema *Schema, attributes map[string]string) error {
 	var _arg0 *C.SecretService // out
 	var _arg3 *C.GCancellable  // out
@@ -255,6 +290,10 @@ func (service *Service) ClearSync(ctx context.Context, schema *Schema, attribute
 	defer C.g_hash_table_unref(_arg2)
 
 	C.secret_service_clear_sync(_arg0, _arg1, _arg2, _arg3, &_cerr)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
 
 	var _goerr error // out
 
@@ -274,6 +313,12 @@ func (service *Service) ClearSync(ctx context.Context, schema *Schema, attribute
 // established by the time you get the Service proxy.
 //
 // This method will return immediately and complete asynchronously.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - callback: called when the operation completes.
+//
 func (self *Service) EnsureSession(ctx context.Context, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretService      // out
 	var _arg1 *C.GCancellable       // out
@@ -292,10 +337,18 @@ func (self *Service) EnsureSession(ctx context.Context, callback gio.AsyncReadyC
 	}
 
 	C.secret_service_ensure_session(_arg0, _arg1, _arg2, _arg3)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(callback)
 }
 
 // EnsureSessionFinish: finish an asynchronous operation to ensure that the
 // Service proxy has established a session with the Secret Service.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to the callback.
+//
 func (self *Service) EnsureSessionFinish(result gio.AsyncResulter) error {
 	var _arg0 *C.SecretService // out
 	var _arg1 *C.GAsyncResult  // out
@@ -305,6 +358,8 @@ func (self *Service) EnsureSessionFinish(result gio.AsyncResulter) error {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	C.secret_service_ensure_session_finish(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(result)
 
 	var _goerr error // out
 
@@ -325,6 +380,11 @@ func (self *Service) EnsureSessionFinish(result gio.AsyncResulter) error {
 //
 // This method may block indefinitely and should not be used in user interface
 // threads.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//
 func (self *Service) EnsureSessionSync(ctx context.Context) error {
 	var _arg0 *C.SecretService // out
 	var _arg1 *C.GCancellable  // out
@@ -338,6 +398,8 @@ func (self *Service) EnsureSessionSync(ctx context.Context) error {
 	}
 
 	C.secret_service_ensure_session_sync(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
 
 	var _goerr error // out
 
@@ -357,6 +419,7 @@ func (self *Service) CollectionGType() externglib.Type {
 	_arg0 = (*C.SecretService)(unsafe.Pointer(self.Native()))
 
 	_cret = C.secret_service_get_collection_gtype(_arg0)
+	runtime.KeepAlive(self)
 
 	var _gType externglib.Type // out
 
@@ -378,6 +441,7 @@ func (self *Service) Collections() []Collection {
 	_arg0 = (*C.SecretService)(unsafe.Pointer(self.Native()))
 
 	_cret = C.secret_service_get_collections(_arg0)
+	runtime.KeepAlive(self)
 
 	var _list []Collection // out
 
@@ -406,6 +470,7 @@ func (self *Service) Flags() ServiceFlags {
 	_arg0 = (*C.SecretService)(unsafe.Pointer(self.Native()))
 
 	_cret = C.secret_service_get_flags(_arg0)
+	runtime.KeepAlive(self)
 
 	var _serviceFlags ServiceFlags // out
 
@@ -423,6 +488,7 @@ func (self *Service) ItemGType() externglib.Type {
 	_arg0 = (*C.SecretService)(unsafe.Pointer(self.Native()))
 
 	_cret = C.secret_service_get_item_gtype(_arg0)
+	runtime.KeepAlive(self)
 
 	var _gType externglib.Type // out
 
@@ -443,6 +509,7 @@ func (self *Service) SessionAlgorithms() string {
 	_arg0 = (*C.SecretService)(unsafe.Pointer(self.Native()))
 
 	_cret = C.secret_service_get_session_algorithms(_arg0)
+	runtime.KeepAlive(self)
 
 	var _utf8 string // out
 
@@ -462,6 +529,12 @@ func (self *Service) SessionAlgorithms() string {
 // loaded by the time you get the Service proxy.
 //
 // This method will return immediately and complete asynchronously.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - callback: called when the operation completes.
+//
 func (self *Service) LoadCollections(ctx context.Context, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretService      // out
 	var _arg1 *C.GCancellable       // out
@@ -480,10 +553,18 @@ func (self *Service) LoadCollections(ctx context.Context, callback gio.AsyncRead
 	}
 
 	C.secret_service_load_collections(_arg0, _arg1, _arg2, _arg3)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(callback)
 }
 
 // LoadCollectionsFinish: complete an asynchronous operation to ensure that the
 // Service proxy has loaded all the collections present in the Secret Service.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to the callback.
+//
 func (self *Service) LoadCollectionsFinish(result gio.AsyncResulter) error {
 	var _arg0 *C.SecretService // out
 	var _arg1 *C.GAsyncResult  // out
@@ -493,6 +574,8 @@ func (self *Service) LoadCollectionsFinish(result gio.AsyncResulter) error {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	C.secret_service_load_collections_finish(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(result)
 
 	var _goerr error // out
 
@@ -513,6 +596,11 @@ func (self *Service) LoadCollectionsFinish(result gio.AsyncResulter) error {
 //
 // This method may block indefinitely and should not be used in user interface
 // threads.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//
 func (self *Service) LoadCollectionsSync(ctx context.Context) error {
 	var _arg0 *C.SecretService // out
 	var _arg1 *C.GCancellable  // out
@@ -526,6 +614,8 @@ func (self *Service) LoadCollectionsSync(ctx context.Context) error {
 	}
 
 	C.secret_service_load_collections_sync(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
 
 	var _goerr error // out
 
@@ -547,6 +637,13 @@ func (self *Service) LoadCollectionsSync(ctx context.Context) error {
 // This method returns immediately and completes asynchronously. The secret
 // service may prompt the user. secret_service_prompt() will be used to handle
 // any prompts that show up.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - objects items or collections to lock.
+//    - callback: called when the operation completes.
+//
 func (service *Service) Lock(ctx context.Context, objects []gio.DBusProxy, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretService      // out
 	var _arg2 *C.GCancellable       // out
@@ -575,6 +672,10 @@ func (service *Service) Lock(ctx context.Context, objects []gio.DBusProxy, callb
 	}
 
 	C.secret_service_lock(_arg0, _arg1, _arg2, _arg3, _arg4)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(objects)
+	runtime.KeepAlive(callback)
 }
 
 // LockFinish: complete asynchronous operation to lock items or collections in
@@ -582,6 +683,11 @@ func (service *Service) Lock(ctx context.Context, objects []gio.DBusProxy, callb
 //
 // The secret service may not be able to lock items individually, and may lock
 // an entire collection instead.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to the callback.
+//
 func (service *Service) LockFinish(result gio.AsyncResulter) ([]gio.DBusProxy, int, error) {
 	var _arg0 *C.SecretService // out
 	var _arg1 *C.GAsyncResult  // out
@@ -595,6 +701,8 @@ func (service *Service) LockFinish(result gio.AsyncResulter) ([]gio.DBusProxy, i
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	_cret = C.secret_service_lock_finish(_arg0, _arg1, &_arg2, &_cerr)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(result)
 
 	var _locked []gio.DBusProxy // out
 	var _gint int               // out
@@ -642,6 +750,12 @@ func (service *Service) LockFinish(result gio.AsyncResulter) ([]gio.DBusProxy, i
 // This method may block indefinitely and should not be used in user interface
 // threads. The secret service may prompt the user. secret_service_prompt() will
 // be used to handle any prompts that show up.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - objects items or collections to lock.
+//
 func (service *Service) LockSync(ctx context.Context, objects []gio.DBusProxy) ([]gio.DBusProxy, int, error) {
 	var _arg0 *C.SecretService // out
 	var _arg2 *C.GCancellable  // out
@@ -667,6 +781,9 @@ func (service *Service) LockSync(ctx context.Context, objects []gio.DBusProxy) (
 	defer C.g_list_free(_arg1)
 
 	_cret = C.secret_service_lock_sync(_arg0, _arg1, _arg2, &_arg3, &_cerr)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(objects)
 
 	var _locked []gio.DBusProxy // out
 	var _gint int               // out
@@ -711,6 +828,14 @@ func (service *Service) LockSync(ctx context.Context, objects []gio.DBusProxy) (
 // default Service proxy.
 //
 // This method will return immediately and complete asynchronously.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - schema for the attributes.
+//    - attributes: attribute keys and values.
+//    - callback: called when the operation completes.
+//
 func (service *Service) Lookup(ctx context.Context, schema *Schema, attributes map[string]string, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretService      // out
 	var _arg3 *C.GCancellable       // out
@@ -747,12 +872,22 @@ func (service *Service) Lookup(ctx context.Context, schema *Schema, attributes m
 	}
 
 	C.secret_service_lookup(_arg0, _arg1, _arg2, _arg3, _arg4, _arg5)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
+	runtime.KeepAlive(callback)
 }
 
 // LookupFinish: finish asynchronous operation to lookup a secret value in the
 // secret service.
 //
 // If no secret is found then NULL is returned.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to the callback.
+//
 func (service *Service) LookupFinish(result gio.AsyncResulter) (*Value, error) {
 	var _arg0 *C.SecretService // out
 	var _arg1 *C.GAsyncResult  // out
@@ -765,15 +900,19 @@ func (service *Service) LookupFinish(result gio.AsyncResulter) (*Value, error) {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	_cret = C.secret_service_lookup_finish(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(result)
 
 	var _value *Value // out
 	var _goerr error  // out
 
 	_value = (*Value)(gextras.NewStructNative(unsafe.Pointer(_cret)))
-	C.secret_value_ref(_cret)
-	runtime.SetFinalizer(_value, func(v *Value) {
-		C.secret_value_unref((C.gpointer)(gextras.StructNative(unsafe.Pointer(v))))
-	})
+	runtime.SetFinalizer(
+		gextras.StructIntern(unsafe.Pointer(_value)),
+		func(intern *struct{ C unsafe.Pointer }) {
+			C.secret_value_unref((C.gpointer)(intern.C))
+		},
+	)
 	if _cerr != nil {
 		_goerr = gerror.Take(unsafe.Pointer(_cerr))
 	}
@@ -790,6 +929,13 @@ func (service *Service) LookupFinish(result gio.AsyncResulter) (*Value, error) {
 //
 // This method may block indefinitely and should not be used in user interface
 // threads.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - schema for the attributes.
+//    - attributes: attribute keys and values.
+//
 func (service *Service) LookupSync(ctx context.Context, schema *Schema, attributes map[string]string) (*Value, error) {
 	var _arg0 *C.SecretService // out
 	var _arg3 *C.GCancellable  // out
@@ -822,15 +968,21 @@ func (service *Service) LookupSync(ctx context.Context, schema *Schema, attribut
 	defer C.g_hash_table_unref(_arg2)
 
 	_cret = C.secret_service_lookup_sync(_arg0, _arg1, _arg2, _arg3, &_cerr)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
 
 	var _value *Value // out
 	var _goerr error  // out
 
 	_value = (*Value)(gextras.NewStructNative(unsafe.Pointer(_cret)))
-	C.secret_value_ref(_cret)
-	runtime.SetFinalizer(_value, func(v *Value) {
-		C.secret_value_unref((C.gpointer)(gextras.StructNative(unsafe.Pointer(v))))
-	})
+	runtime.SetFinalizer(
+		gextras.StructIntern(unsafe.Pointer(_value)),
+		func(intern *struct{ C unsafe.Pointer }) {
+			C.secret_value_unref((C.gpointer)(intern.C))
+		},
+	)
 	if _cerr != nil {
 		_goerr = gerror.Take(unsafe.Pointer(_cerr))
 	}
@@ -846,6 +998,14 @@ func (service *Service) LookupSync(ctx context.Context, schema *Schema, attribut
 // Override the ServiceClass <literal>prompt_async</literal> virtual method to
 // change the behavior of the prompting. The default behavior is to simply run
 // secret_prompt_perform() on the prompt.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - prompt: prompt.
+//    - returnType: variant type of the prompt result.
+//    - callback: called when the operation completes.
+//
 func (self *Service) Prompt(ctx context.Context, prompt *Prompt, returnType *glib.VariantType, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretService      // out
 	var _arg3 *C.GCancellable       // out
@@ -870,6 +1030,11 @@ func (self *Service) Prompt(ctx context.Context, prompt *Prompt, returnType *gli
 	}
 
 	C.secret_service_prompt(_arg0, _arg1, _arg2, _arg3, _arg4, _arg5)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(prompt)
+	runtime.KeepAlive(returnType)
+	runtime.KeepAlive(callback)
 }
 
 // PromptFinish: complete asynchronous operation to perform prompting for a
@@ -878,6 +1043,11 @@ func (self *Service) Prompt(ctx context.Context, prompt *Prompt, returnType *gli
 // Returns a variant result if the prompt was completed and not dismissed. The
 // type of result depends on the action the prompt is completing, and is defined
 // in the Secret Service DBus API specification.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to the callback.
+//
 func (self *Service) PromptFinish(result gio.AsyncResulter) (*glib.Variant, error) {
 	var _arg0 *C.SecretService // out
 	var _arg1 *C.GAsyncResult  // out
@@ -888,15 +1058,19 @@ func (self *Service) PromptFinish(result gio.AsyncResulter) (*glib.Variant, erro
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	_cret = C.secret_service_prompt_finish(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(result)
 
 	var _variant *glib.Variant // out
 	var _goerr error           // out
 
 	_variant = (*glib.Variant)(gextras.NewStructNative(unsafe.Pointer(_cret)))
-	C.g_variant_ref(_cret)
-	runtime.SetFinalizer(_variant, func(v *glib.Variant) {
-		C.g_variant_unref((*C.GVariant)(gextras.StructNative(unsafe.Pointer(v))))
-	})
+	runtime.SetFinalizer(
+		gextras.StructIntern(unsafe.Pointer(_variant)),
+		func(intern *struct{ C unsafe.Pointer }) {
+			C.g_variant_unref((*C.GVariant)(intern.C))
+		},
+	)
 	if _cerr != nil {
 		_goerr = gerror.Take(unsafe.Pointer(_cerr))
 	}
@@ -918,6 +1092,13 @@ func (self *Service) PromptFinish(result gio.AsyncResulter) (*glib.Variant, erro
 // change the behavior of the prompting. The default behavior is to simply run
 // secret_prompt_perform_sync() on the prompt with a NULL
 // <literal>window_id</literal>.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - prompt: prompt.
+//    - returnType: variant type of the prompt result.
+//
 func (self *Service) PromptSync(ctx context.Context, prompt *Prompt, returnType *glib.VariantType) (*glib.Variant, error) {
 	var _arg0 *C.SecretService // out
 	var _arg2 *C.GCancellable  // out
@@ -936,15 +1117,21 @@ func (self *Service) PromptSync(ctx context.Context, prompt *Prompt, returnType 
 	_arg3 = (*C.GVariantType)(gextras.StructNative(unsafe.Pointer(returnType)))
 
 	_cret = C.secret_service_prompt_sync(_arg0, _arg1, _arg2, _arg3, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(prompt)
+	runtime.KeepAlive(returnType)
 
 	var _variant *glib.Variant // out
 	var _goerr error           // out
 
 	_variant = (*glib.Variant)(gextras.NewStructNative(unsafe.Pointer(_cret)))
-	C.g_variant_ref(_cret)
-	runtime.SetFinalizer(_variant, func(v *glib.Variant) {
-		C.g_variant_unref((*C.GVariant)(gextras.StructNative(unsafe.Pointer(v))))
-	})
+	runtime.SetFinalizer(
+		gextras.StructIntern(unsafe.Pointer(_variant)),
+		func(intern *struct{ C unsafe.Pointer }) {
+			C.g_variant_unref((*C.GVariant)(intern.C))
+		},
+	)
 	if _cerr != nil {
 		_goerr = gerror.Take(unsafe.Pointer(_cerr))
 	}
@@ -970,6 +1157,15 @@ func (self *Service) PromptSync(ctx context.Context, prompt *Prompt, returnType 
 // secret values loaded and available via secret_item_get_secret().
 //
 // This function returns immediately and completes asynchronously.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - schema for the attributes.
+//    - attributes: search for items matching these attributes.
+//    - flags: search option flags.
+//    - callback: called when the operation completes.
+//
 func (service *Service) Search(ctx context.Context, schema *Schema, attributes map[string]string, flags SearchFlags, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretService      // out
 	var _arg4 *C.GCancellable       // out
@@ -1008,9 +1204,20 @@ func (service *Service) Search(ctx context.Context, schema *Schema, attributes m
 	}
 
 	C.secret_service_search(_arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
+	runtime.KeepAlive(flags)
+	runtime.KeepAlive(callback)
 }
 
 // SearchFinish: complete asynchronous operation to search for items.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to callback.
+//
 func (service *Service) SearchFinish(result gio.AsyncResulter) ([]Item, error) {
 	var _arg0 *C.SecretService // out
 	var _arg1 *C.GAsyncResult  // out
@@ -1023,6 +1230,8 @@ func (service *Service) SearchFinish(result gio.AsyncResulter) ([]Item, error) {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	_cret = C.secret_service_search_finish(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(result)
 
 	var _list []Item // out
 	var _goerr error // out
@@ -1062,6 +1271,14 @@ func (service *Service) SearchFinish(result gio.AsyncResulter) ([]Item, error) {
 //
 // This function may block indefinitely. Use the asynchronous version in user
 // interface threads.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - schema for the attributes.
+//    - attributes: search for items matching these attributes.
+//    - flags: search option flags.
+//
 func (service *Service) SearchSync(ctx context.Context, schema *Schema, attributes map[string]string, flags SearchFlags) ([]Item, error) {
 	var _arg0 *C.SecretService    // out
 	var _arg4 *C.GCancellable     // out
@@ -1096,6 +1313,11 @@ func (service *Service) SearchSync(ctx context.Context, schema *Schema, attribut
 	_arg3 = C.SecretSearchFlags(flags)
 
 	_cret = C.secret_service_search_sync(_arg0, _arg1, _arg2, _arg3, _arg4, &_cerr)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
+	runtime.KeepAlive(flags)
 
 	var _list []Item // out
 	var _goerr error // out
@@ -1121,6 +1343,14 @@ func (service *Service) SearchSync(ctx context.Context, schema *Schema, attribut
 // default Service proxy.
 //
 // This method will return immediately and complete asynchronously.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - alias to assign the collection to.
+//    - collection to assign to the alias.
+//    - callback: called when the operation completes.
+//
 func (service *Service) SetAlias(ctx context.Context, alias string, collection *Collection, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretService      // out
 	var _arg3 *C.GCancellable       // out
@@ -1148,10 +1378,20 @@ func (service *Service) SetAlias(ctx context.Context, alias string, collection *
 	}
 
 	C.secret_service_set_alias(_arg0, _arg1, _arg2, _arg3, _arg4, _arg5)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(alias)
+	runtime.KeepAlive(collection)
+	runtime.KeepAlive(callback)
 }
 
 // SetAliasFinish: finish an asynchronous operation to assign a collection to an
 // alias.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to callback.
+//
 func (service *Service) SetAliasFinish(result gio.AsyncResulter) error {
 	var _arg0 *C.SecretService // out
 	var _arg1 *C.GAsyncResult  // out
@@ -1163,6 +1403,8 @@ func (service *Service) SetAliasFinish(result gio.AsyncResulter) error {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	C.secret_service_set_alias_finish(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(result)
 
 	var _goerr error // out
 
@@ -1180,6 +1422,13 @@ func (service *Service) SetAliasFinish(result gio.AsyncResulter) error {
 // default Service proxy.
 //
 // This method may block and should not be used in user interface threads.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - alias to assign the collection to.
+//    - collection to assign to the alias.
+//
 func (service *Service) SetAliasSync(ctx context.Context, alias string, collection *Collection) error {
 	var _arg0 *C.SecretService    // out
 	var _arg3 *C.GCancellable     // out
@@ -1202,6 +1451,10 @@ func (service *Service) SetAliasSync(ctx context.Context, alias string, collecti
 	}
 
 	C.secret_service_set_alias_sync(_arg0, _arg1, _arg2, _arg3, &_cerr)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(alias)
+	runtime.KeepAlive(collection)
 
 	var _goerr error // out
 
@@ -1227,7 +1480,19 @@ func (service *Service) SetAliasSync(ctx context.Context, alias string, collecti
 // which doesn't get stored across login sessions.
 //
 // This method will return immediately and complete asynchronously.
-func (service *Service) Store(ctx context.Context, schema *Schema, attributes map[string]string, collection string, label string, value *Value, callback gio.AsyncReadyCallback) {
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - schema to use to check attributes.
+//    - attributes: attribute keys and values.
+//    - collection alias, or D-Bus object path of the collection where to store
+//    the secret.
+//    - label for the secret.
+//    - value: secret value.
+//    - callback: called when the operation completes.
+//
+func (service *Service) Store(ctx context.Context, schema *Schema, attributes map[string]string, collection, label string, value *Value, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretService      // out
 	var _arg6 *C.GCancellable       // out
 	var _arg1 *C.SecretSchema       // out
@@ -1273,10 +1538,23 @@ func (service *Service) Store(ctx context.Context, schema *Schema, attributes ma
 	}
 
 	C.secret_service_store(_arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, _arg8)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
+	runtime.KeepAlive(collection)
+	runtime.KeepAlive(label)
+	runtime.KeepAlive(value)
+	runtime.KeepAlive(callback)
 }
 
 // StoreFinish: finish asynchronous operation to store a secret value in the
 // secret service.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to the callback.
+//
 func (service *Service) StoreFinish(result gio.AsyncResulter) error {
 	var _arg0 *C.SecretService // out
 	var _arg1 *C.GAsyncResult  // out
@@ -1288,6 +1566,8 @@ func (service *Service) StoreFinish(result gio.AsyncResulter) error {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	C.secret_service_store_finish(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(result)
 
 	var _goerr error // out
 
@@ -1314,7 +1594,18 @@ func (service *Service) StoreFinish(result gio.AsyncResulter) error {
 //
 // This method may block indefinitely and should not be used in user interface
 // threads.
-func (service *Service) StoreSync(ctx context.Context, schema *Schema, attributes map[string]string, collection string, label string, value *Value) error {
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - schema for the attributes.
+//    - attributes: attribute keys and values.
+//    - collection alias, or D-Bus object path of the collection where to store
+//    the secret.
+//    - label for the secret.
+//    - value: secret value.
+//
+func (service *Service) StoreSync(ctx context.Context, schema *Schema, attributes map[string]string, collection, label string, value *Value) error {
 	var _arg0 *C.SecretService // out
 	var _arg6 *C.GCancellable  // out
 	var _arg1 *C.SecretSchema  // out
@@ -1355,6 +1646,13 @@ func (service *Service) StoreSync(ctx context.Context, schema *Schema, attribute
 	_arg5 = (*C.SecretValue)(gextras.StructNative(unsafe.Pointer(value)))
 
 	C.secret_service_store_sync(_arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6, &_cerr)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
+	runtime.KeepAlive(collection)
+	runtime.KeepAlive(label)
+	runtime.KeepAlive(value)
 
 	var _goerr error // out
 
@@ -1376,6 +1674,13 @@ func (service *Service) StoreSync(ctx context.Context, schema *Schema, attribute
 // This method may block indefinitely and should not be used in user interface
 // threads. The secret service may prompt the user. secret_service_prompt() will
 // be used to handle any prompts that show up.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - objects items or collections to unlock.
+//    - callback: called when the operation completes.
+//
 func (service *Service) Unlock(ctx context.Context, objects []gio.DBusProxy, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretService      // out
 	var _arg2 *C.GCancellable       // out
@@ -1404,6 +1709,10 @@ func (service *Service) Unlock(ctx context.Context, objects []gio.DBusProxy, cal
 	}
 
 	C.secret_service_unlock(_arg0, _arg1, _arg2, _arg3, _arg4)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(objects)
+	runtime.KeepAlive(callback)
 }
 
 // UnlockFinish: complete asynchronous operation to unlock items or collections
@@ -1411,6 +1720,11 @@ func (service *Service) Unlock(ctx context.Context, objects []gio.DBusProxy, cal
 //
 // The secret service may not be able to unlock items individually, and may
 // unlock an entire collection instead.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to the callback.
+//
 func (service *Service) UnlockFinish(result gio.AsyncResulter) ([]gio.DBusProxy, int, error) {
 	var _arg0 *C.SecretService // out
 	var _arg1 *C.GAsyncResult  // out
@@ -1424,6 +1738,8 @@ func (service *Service) UnlockFinish(result gio.AsyncResulter) ([]gio.DBusProxy,
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	_cret = C.secret_service_unlock_finish(_arg0, _arg1, &_arg2, &_cerr)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(result)
 
 	var _unlocked []gio.DBusProxy // out
 	var _gint int                 // out
@@ -1471,6 +1787,12 @@ func (service *Service) UnlockFinish(result gio.AsyncResulter) ([]gio.DBusProxy,
 // This method may block indefinitely and should not be used in user interface
 // threads. The secret service may prompt the user. secret_service_prompt() will
 // be used to handle any prompts that show up.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - objects items or collections to unlock.
+//
 func (service *Service) UnlockSync(ctx context.Context, objects []gio.DBusProxy) ([]gio.DBusProxy, int, error) {
 	var _arg0 *C.SecretService // out
 	var _arg2 *C.GCancellable  // out
@@ -1496,6 +1818,9 @@ func (service *Service) UnlockSync(ctx context.Context, objects []gio.DBusProxy)
 	defer C.g_list_free(_arg1)
 
 	_cret = C.secret_service_unlock_sync(_arg0, _arg1, _arg2, &_arg3, &_cerr)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(objects)
 
 	var _unlocked []gio.DBusProxy // out
 	var _gint int                 // out
@@ -1552,6 +1877,13 @@ func ServiceDisconnect() {
 // are initialized, then those will be initialized before completing.
 //
 // This method will return immediately and complete asynchronously.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - flags for which service functionality to ensure is initialized.
+//    - callback: called when the operation completes.
+//
 func ServiceGet(ctx context.Context, flags ServiceFlags, callback gio.AsyncReadyCallback) {
 	var _arg2 *C.GCancellable       // out
 	var _arg1 C.SecretServiceFlags  // out
@@ -1570,10 +1902,18 @@ func ServiceGet(ctx context.Context, flags ServiceFlags, callback gio.AsyncReady
 	}
 
 	C.secret_service_get(_arg1, _arg2, _arg3, _arg4)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(flags)
+	runtime.KeepAlive(callback)
 }
 
 // ServiceGetFinish: complete an asynchronous operation to get a Service proxy
 // for the Secret Service.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to the callback.
+//
 func ServiceGetFinish(result gio.AsyncResulter) (*Service, error) {
 	var _arg1 *C.GAsyncResult  // out
 	var _cret *C.SecretService // in
@@ -1582,6 +1922,7 @@ func ServiceGetFinish(result gio.AsyncResulter) (*Service, error) {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	_cret = C.secret_service_get_finish(_arg1, &_cerr)
+	runtime.KeepAlive(result)
 
 	var _service *Service // out
 	var _goerr error      // out
@@ -1602,6 +1943,12 @@ func ServiceGetFinish(result gio.AsyncResulter) (*Service, error) {
 //
 // This method may block indefinitely and should not be used in user interface
 // threads.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - flags for which service functionality to ensure is initialized.
+//
 func ServiceGetSync(ctx context.Context, flags ServiceFlags) (*Service, error) {
 	var _arg2 *C.GCancellable      // out
 	var _arg1 C.SecretServiceFlags // out
@@ -1616,6 +1963,8 @@ func ServiceGetSync(ctx context.Context, flags ServiceFlags) (*Service, error) {
 	_arg1 = C.SecretServiceFlags(flags)
 
 	_cret = C.secret_service_get_sync(_arg1, _arg2, &_cerr)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(flags)
 
 	var _service *Service // out
 	var _goerr error      // out
@@ -1641,6 +1990,15 @@ func ServiceGetSync(ctx context.Context, flags ServiceFlags) (*Service, error) {
 // If service_bus_name is NULL then the default is used.
 //
 // This method will return immediately and complete asynchronously.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - serviceGtype: GType of the new secret service.
+//    - serviceBusName d-Bus service name of the secret service.
+//    - flags for which service functionality to ensure is initialized.
+//    - callback: called when the operation completes.
+//
 func ServiceOpen(ctx context.Context, serviceGtype externglib.Type, serviceBusName string, flags ServiceFlags, callback gio.AsyncReadyCallback) {
 	var _arg4 *C.GCancellable       // out
 	var _arg1 C.GType               // out
@@ -1666,10 +2024,20 @@ func ServiceOpen(ctx context.Context, serviceGtype externglib.Type, serviceBusNa
 	}
 
 	C.secret_service_open(_arg1, _arg2, _arg3, _arg4, _arg5, _arg6)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(serviceGtype)
+	runtime.KeepAlive(serviceBusName)
+	runtime.KeepAlive(flags)
+	runtime.KeepAlive(callback)
 }
 
 // ServiceOpenFinish: complete an asynchronous operation to create a new Service
 // proxy for the Secret Service.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to the callback.
+//
 func ServiceOpenFinish(result gio.AsyncResulter) (*Service, error) {
 	var _arg1 *C.GAsyncResult  // out
 	var _cret *C.SecretService // in
@@ -1678,6 +2046,7 @@ func ServiceOpenFinish(result gio.AsyncResulter) (*Service, error) {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	_cret = C.secret_service_open_finish(_arg1, &_cerr)
+	runtime.KeepAlive(result)
 
 	var _service *Service // out
 	var _goerr error      // out
@@ -1704,6 +2073,14 @@ func ServiceOpenFinish(result gio.AsyncResulter) (*Service, error) {
 //
 // This method may block indefinitely and should not be used in user interface
 // threads.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - serviceGtype: GType of the new secret service.
+//    - serviceBusName d-Bus service name of the secret service.
+//    - flags for which service functionality to ensure is initialized.
+//
 func ServiceOpenSync(ctx context.Context, serviceGtype externglib.Type, serviceBusName string, flags ServiceFlags) (*Service, error) {
 	var _arg4 *C.GCancellable      // out
 	var _arg1 C.GType              // out
@@ -1725,6 +2102,10 @@ func ServiceOpenSync(ctx context.Context, serviceGtype externglib.Type, serviceB
 	_arg3 = C.SecretServiceFlags(flags)
 
 	_cret = C.secret_service_open_sync(_arg1, _arg2, _arg3, _arg4, &_cerr)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(serviceGtype)
+	runtime.KeepAlive(serviceBusName)
+	runtime.KeepAlive(flags)
 
 	var _service *Service // out
 	var _goerr error      // out

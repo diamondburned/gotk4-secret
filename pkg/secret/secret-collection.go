@@ -13,12 +13,13 @@ import (
 	"github.com/diamondburned/gotk4/pkg/core/gcancel"
 	"github.com/diamondburned/gotk4/pkg/core/gerror"
 	"github.com/diamondburned/gotk4/pkg/core/gextras"
+	externglib "github.com/diamondburned/gotk4/pkg/core/glib"
 	"github.com/diamondburned/gotk4/pkg/gio/v2"
-	externglib "github.com/gotk3/gotk3/glib"
 )
 
 // #cgo pkg-config: libsecret-1
 // #cgo CFLAGS: -Wno-deprecated-declarations
+// #include <stdlib.h>
 // #include <glib-object.h>
 // #include <libsecret/secret.h>
 // void _gotk4_gio2_AsyncReadyCallback(GObject*, GAsyncResult*, gpointer);
@@ -33,15 +34,15 @@ func init() {
 }
 
 // CollectionCreateFlags flags for secret_collection_create().
-type CollectionCreateFlags int
+type CollectionCreateFlags C.guint
 
 const (
-	// CollectionCreateNone: no flags
+	// CollectionCreateNone: no flags.
 	CollectionCreateNone CollectionCreateFlags = 0b0
 )
 
 func marshalCollectionCreateFlags(p uintptr) (interface{}, error) {
-	return CollectionCreateFlags(C.g_value_get_enum((*C.GValue)(unsafe.Pointer(p)))), nil
+	return CollectionCreateFlags(externglib.ValueFromNative(unsafe.Pointer(p)).Flags()), nil
 }
 
 // String returns the names in string for CollectionCreateFlags.
@@ -70,19 +71,24 @@ func (c CollectionCreateFlags) String() string {
 	return strings.TrimSuffix(builder.String(), "|")
 }
 
+// Has returns true if c contains other.
+func (c CollectionCreateFlags) Has(other CollectionCreateFlags) bool {
+	return (c & other) == other
+}
+
 // CollectionFlags flags which determine which parts of the Collection proxy are
 // initialized.
-type CollectionFlags int
+type CollectionFlags C.guint
 
 const (
-	// CollectionNone: no flags
+	// CollectionNone: no flags.
 	CollectionNone CollectionFlags = 0b0
-	// CollectionLoadItems items have or should be loaded
+	// CollectionLoadItems items have or should be loaded.
 	CollectionLoadItems CollectionFlags = 0b10
 )
 
 func marshalCollectionFlags(p uintptr) (interface{}, error) {
-	return CollectionFlags(C.g_value_get_enum((*C.GValue)(unsafe.Pointer(p)))), nil
+	return CollectionFlags(externglib.ValueFromNative(unsafe.Pointer(p)).Flags()), nil
 }
 
 // String returns the names in string for CollectionFlags.
@@ -113,11 +119,20 @@ func (c CollectionFlags) String() string {
 	return strings.TrimSuffix(builder.String(), "|")
 }
 
+// Has returns true if c contains other.
+func (c CollectionFlags) Has(other CollectionFlags) bool {
+	return (c & other) == other
+}
+
 // Collection: proxy object representing a collection of secrets in the Secret
 // Service.
 type Collection struct {
 	gio.DBusProxy
 }
+
+var (
+	_ externglib.Objector = (*Collection)(nil)
+)
 
 func wrapCollection(obj *externglib.Object) *Collection {
 	return &Collection{
@@ -137,9 +152,7 @@ func wrapCollection(obj *externglib.Object) *Collection {
 }
 
 func marshalCollectioner(p uintptr) (interface{}, error) {
-	val := C.g_value_get_object((*C.GValue)(unsafe.Pointer(p)))
-	obj := externglib.Take(unsafe.Pointer(val))
-	return wrapCollection(obj), nil
+	return wrapCollection(externglib.ValueFromNative(unsafe.Pointer(p)).Object()), nil
 }
 
 // Delete this collection.
@@ -147,6 +160,12 @@ func marshalCollectioner(p uintptr) (interface{}, error) {
 // This method returns immediately and completes asynchronously. The secret
 // service may prompt the user. secret_service_prompt() will be used to handle
 // any prompts that show up.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - callback: called when the operation completes.
+//
 func (self *Collection) Delete(ctx context.Context, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretCollection   // out
 	var _arg1 *C.GCancellable       // out
@@ -165,9 +184,17 @@ func (self *Collection) Delete(ctx context.Context, callback gio.AsyncReadyCallb
 	}
 
 	C.secret_collection_delete(_arg0, _arg1, _arg2, _arg3)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(callback)
 }
 
 // DeleteFinish: complete operation to delete this collection.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to the callback.
+//
 func (self *Collection) DeleteFinish(result gio.AsyncResulter) error {
 	var _arg0 *C.SecretCollection // out
 	var _arg1 *C.GAsyncResult     // out
@@ -177,6 +204,8 @@ func (self *Collection) DeleteFinish(result gio.AsyncResulter) error {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	C.secret_collection_delete_finish(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(result)
 
 	var _goerr error // out
 
@@ -192,6 +221,11 @@ func (self *Collection) DeleteFinish(result gio.AsyncResulter) error {
 // This method may block indefinitely and should not be used in user interface
 // threads. The secret service may prompt the user. secret_service_prompt() will
 // be used to handle any prompts that show up.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//
 func (self *Collection) DeleteSync(ctx context.Context) error {
 	var _arg0 *C.SecretCollection // out
 	var _arg1 *C.GCancellable     // out
@@ -205,6 +239,8 @@ func (self *Collection) DeleteSync(ctx context.Context) error {
 	}
 
 	C.secret_collection_delete_sync(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
 
 	var _goerr error // out
 
@@ -224,6 +260,7 @@ func (self *Collection) Created() uint64 {
 	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
 
 	_cret = C.secret_collection_get_created(_arg0)
+	runtime.KeepAlive(self)
 
 	var _guint64 uint64 // out
 
@@ -244,6 +281,7 @@ func (self *Collection) Flags() CollectionFlags {
 	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
 
 	_cret = C.secret_collection_get_flags(_arg0)
+	runtime.KeepAlive(self)
 
 	var _collectionFlags CollectionFlags // out
 
@@ -260,6 +298,7 @@ func (self *Collection) Items() []Item {
 	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
 
 	_cret = C.secret_collection_get_items(_arg0)
+	runtime.KeepAlive(self)
 
 	var _list []Item // out
 
@@ -282,6 +321,7 @@ func (self *Collection) Label() string {
 	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
 
 	_cret = C.secret_collection_get_label(_arg0)
+	runtime.KeepAlive(self)
 
 	var _utf8 string // out
 
@@ -302,6 +342,7 @@ func (self *Collection) Locked() bool {
 	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
 
 	_cret = C.secret_collection_get_locked(_arg0)
+	runtime.KeepAlive(self)
 
 	var _ok bool // out
 
@@ -321,6 +362,7 @@ func (self *Collection) Modified() uint64 {
 	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
 
 	_cret = C.secret_collection_get_modified(_arg0)
+	runtime.KeepAlive(self)
 
 	var _guint64 uint64 // out
 
@@ -337,6 +379,7 @@ func (self *Collection) Service() *Service {
 	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
 
 	_cret = C.secret_collection_get_service(_arg0)
+	runtime.KeepAlive(self)
 
 	var _service *Service // out
 
@@ -353,6 +396,12 @@ func (self *Collection) Service() *Service {
 // have already been loaded.
 //
 // This method will return immediately and complete asynchronously.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - callback: called when the operation completes.
+//
 func (self *Collection) LoadItems(ctx context.Context, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretCollection   // out
 	var _arg1 *C.GCancellable       // out
@@ -371,10 +420,18 @@ func (self *Collection) LoadItems(ctx context.Context, callback gio.AsyncReadyCa
 	}
 
 	C.secret_collection_load_items(_arg0, _arg1, _arg2, _arg3)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(callback)
 }
 
 // LoadItemsFinish: complete an asynchronous operation to ensure that the
 // Collection proxy has loaded all the items present in the Secret Service.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to the callback.
+//
 func (self *Collection) LoadItemsFinish(result gio.AsyncResulter) error {
 	var _arg0 *C.SecretCollection // out
 	var _arg1 *C.GAsyncResult     // out
@@ -384,6 +441,8 @@ func (self *Collection) LoadItemsFinish(result gio.AsyncResulter) error {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	C.secret_collection_load_items_finish(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(result)
 
 	var _goerr error // out
 
@@ -403,6 +462,11 @@ func (self *Collection) LoadItemsFinish(result gio.AsyncResulter) error {
 //
 // This method may block indefinitely and should not be used in user interface
 // threads.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//
 func (self *Collection) LoadItemsSync(ctx context.Context) error {
 	var _arg0 *C.SecretCollection // out
 	var _arg1 *C.GCancellable     // out
@@ -416,6 +480,8 @@ func (self *Collection) LoadItemsSync(ctx context.Context) error {
 	}
 
 	C.secret_collection_load_items_sync(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
 
 	var _goerr error // out
 
@@ -437,6 +503,7 @@ func (self *Collection) Refresh() {
 	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
 
 	C.secret_collection_refresh(_arg0)
+	runtime.KeepAlive(self)
 }
 
 // Search for items matching the attributes in the collection. The attributes
@@ -454,6 +521,15 @@ func (self *Collection) Refresh() {
 // secret values loaded and available via secret_item_get_secret().
 //
 // This function returns immediately and completes asynchronously.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - schema for the attributes.
+//    - attributes: search for items matching these attributes.
+//    - flags: search option flags.
+//    - callback: called when the operation completes.
+//
 func (self *Collection) Search(ctx context.Context, schema *Schema, attributes map[string]string, flags SearchFlags, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretCollection   // out
 	var _arg4 *C.GCancellable       // out
@@ -490,10 +566,21 @@ func (self *Collection) Search(ctx context.Context, schema *Schema, attributes m
 	}
 
 	C.secret_collection_search(_arg0, _arg1, _arg2, _arg3, _arg4, _arg5, _arg6)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
+	runtime.KeepAlive(flags)
+	runtime.KeepAlive(callback)
 }
 
 // SearchFinish: complete asynchronous operation to search for items in a
 // collection.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to callback.
+//
 func (self *Collection) SearchFinish(result gio.AsyncResulter) ([]Item, error) {
 	var _arg0 *C.SecretCollection // out
 	var _arg1 *C.GAsyncResult     // out
@@ -504,6 +591,8 @@ func (self *Collection) SearchFinish(result gio.AsyncResulter) ([]Item, error) {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	_cret = C.secret_collection_search_finish(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(result)
 
 	var _list []Item // out
 	var _goerr error // out
@@ -538,6 +627,14 @@ func (self *Collection) SearchFinish(result gio.AsyncResulter) ([]Item, error) {
 //
 // This function may block indefinitely. Use the asynchronous version in user
 // interface threads.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - schema for the attributes.
+//    - attributes: search for items matching these attributes.
+//    - flags: search option flags.
+//
 func (self *Collection) SearchSync(ctx context.Context, schema *Schema, attributes map[string]string, flags SearchFlags) ([]Item, error) {
 	var _arg0 *C.SecretCollection // out
 	var _arg4 *C.GCancellable     // out
@@ -570,6 +667,11 @@ func (self *Collection) SearchSync(ctx context.Context, schema *Schema, attribut
 	_arg3 = C.SecretSearchFlags(flags)
 
 	_cret = C.secret_collection_search_sync(_arg0, _arg1, _arg2, _arg3, _arg4, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
+	runtime.KeepAlive(flags)
 
 	var _list []Item // out
 	var _goerr error // out
@@ -591,6 +693,13 @@ func (self *Collection) SearchSync(ctx context.Context, schema *Schema, attribut
 // SetLabel: set the label of this collection.
 //
 // This function returns immediately and completes asynchronously.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - label: new label.
+//    - callback: called when the operation completes.
+//
 func (self *Collection) SetLabel(ctx context.Context, label string, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretCollection   // out
 	var _arg2 *C.GCancellable       // out
@@ -612,10 +721,19 @@ func (self *Collection) SetLabel(ctx context.Context, label string, callback gio
 	}
 
 	C.secret_collection_set_label(_arg0, _arg1, _arg2, _arg3, _arg4)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(label)
+	runtime.KeepAlive(callback)
 }
 
 // SetLabelFinish: complete asynchronous operation to set the label of this
 // collection.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to callback.
+//
 func (self *Collection) SetLabelFinish(result gio.AsyncResulter) error {
 	var _arg0 *C.SecretCollection // out
 	var _arg1 *C.GAsyncResult     // out
@@ -625,6 +743,8 @@ func (self *Collection) SetLabelFinish(result gio.AsyncResulter) error {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	C.secret_collection_set_label_finish(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(result)
 
 	var _goerr error // out
 
@@ -639,6 +759,12 @@ func (self *Collection) SetLabelFinish(result gio.AsyncResulter) error {
 //
 // This function may block indefinitely. Use the asynchronous version in user
 // interface threads.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - label: new label.
+//
 func (self *Collection) SetLabelSync(ctx context.Context, label string) error {
 	var _arg0 *C.SecretCollection // out
 	var _arg2 *C.GCancellable     // out
@@ -655,6 +781,9 @@ func (self *Collection) SetLabelSync(ctx context.Context, label string) error {
 	defer C.free(unsafe.Pointer(_arg1))
 
 	C.secret_collection_set_label_sync(_arg0, _arg1, _arg2, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(label)
 
 	var _goerr error // out
 
@@ -679,7 +808,17 @@ func (self *Collection) SetLabelSync(ctx context.Context, label string) error {
 //
 // If service is NULL, then secret_service_get() will be called to get the
 // default Service proxy.
-func CollectionCreate(ctx context.Context, service *Service, label string, alias string, flags CollectionCreateFlags, callback gio.AsyncReadyCallback) {
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - service: secret service object.
+//    - label for the new collection.
+//    - alias to assign to the collection.
+//    - flags: currently unused.
+//    - callback: called when the operation completes.
+//
+func CollectionCreate(ctx context.Context, service *Service, label, alias string, flags CollectionCreateFlags, callback gio.AsyncReadyCallback) {
 	var _arg5 *C.GCancellable               // out
 	var _arg1 *C.SecretService              // out
 	var _arg2 *C.gchar                      // out
@@ -709,10 +848,21 @@ func CollectionCreate(ctx context.Context, service *Service, label string, alias
 	}
 
 	C.secret_collection_create(_arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(label)
+	runtime.KeepAlive(alias)
+	runtime.KeepAlive(flags)
+	runtime.KeepAlive(callback)
 }
 
 // CollectionCreateFinish: finish operation to create a new collection in the
 // secret service.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to the callback.
+//
 func CollectionCreateFinish(result gio.AsyncResulter) (*Collection, error) {
 	var _arg1 *C.GAsyncResult     // out
 	var _cret *C.SecretCollection // in
@@ -721,6 +871,7 @@ func CollectionCreateFinish(result gio.AsyncResulter) (*Collection, error) {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	_cret = C.secret_collection_create_finish(_arg1, &_cerr)
+	runtime.KeepAlive(result)
 
 	var _collection *Collection // out
 	var _goerr error            // out
@@ -747,7 +898,16 @@ func CollectionCreateFinish(result gio.AsyncResulter) (*Collection, error) {
 //
 // If service is NULL, then secret_service_get_sync() will be called to get the
 // default Service proxy.
-func CollectionCreateSync(ctx context.Context, service *Service, label string, alias string, flags CollectionCreateFlags) (*Collection, error) {
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - service: secret service object.
+//    - label for the new collection.
+//    - alias to assign to the collection.
+//    - flags: currently unused.
+//
+func CollectionCreateSync(ctx context.Context, service *Service, label, alias string, flags CollectionCreateFlags) (*Collection, error) {
 	var _arg5 *C.GCancellable               // out
 	var _arg1 *C.SecretService              // out
 	var _arg2 *C.gchar                      // out
@@ -773,6 +933,11 @@ func CollectionCreateSync(ctx context.Context, service *Service, label string, a
 	_arg4 = C.SecretCollectionCreateFlags(flags)
 
 	_cret = C.secret_collection_create_sync(_arg1, _arg2, _arg3, _arg4, _arg5, &_cerr)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(label)
+	runtime.KeepAlive(alias)
+	runtime.KeepAlive(flags)
 
 	var _collection *Collection // out
 	var _goerr error            // out
@@ -792,6 +957,15 @@ func CollectionCreateSync(ctx context.Context, service *Service, label string, a
 // default Service proxy.
 //
 // This method will return immediately and complete asynchronously.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - service: secret service object.
+//    - alias to lookup.
+//    - flags options for the collection initialization.
+//    - callback: called when the operation completes.
+//
 func CollectionForAlias(ctx context.Context, service *Service, alias string, flags CollectionFlags, callback gio.AsyncReadyCallback) {
 	var _arg4 *C.GCancellable         // out
 	var _arg1 *C.SecretService        // out
@@ -817,10 +991,20 @@ func CollectionForAlias(ctx context.Context, service *Service, alias string, fla
 	}
 
 	C.secret_collection_for_alias(_arg1, _arg2, _arg3, _arg4, _arg5, _arg6)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(alias)
+	runtime.KeepAlive(flags)
+	runtime.KeepAlive(callback)
 }
 
 // CollectionForAliasFinish: finish an asynchronous operation to lookup which
 // collection is assigned to an alias.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to callback.
+//
 func CollectionForAliasFinish(result gio.AsyncResulter) (*Collection, error) {
 	var _arg1 *C.GAsyncResult     // out
 	var _cret *C.SecretCollection // in
@@ -829,6 +1013,7 @@ func CollectionForAliasFinish(result gio.AsyncResulter) (*Collection, error) {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	_cret = C.secret_collection_for_alias_finish(_arg1, &_cerr)
+	runtime.KeepAlive(result)
 
 	var _collection *Collection // out
 	var _goerr error            // out
@@ -848,6 +1033,14 @@ func CollectionForAliasFinish(result gio.AsyncResulter) (*Collection, error) {
 // default Service proxy.
 //
 // This method may block and should not be used in user interface threads.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - service: secret service object.
+//    - alias to lookup.
+//    - flags options for the collection initialization.
+//
 func CollectionForAliasSync(ctx context.Context, service *Service, alias string, flags CollectionFlags) (*Collection, error) {
 	var _arg4 *C.GCancellable         // out
 	var _arg1 *C.SecretService        // out
@@ -869,6 +1062,10 @@ func CollectionForAliasSync(ctx context.Context, service *Service, alias string,
 	_arg3 = C.SecretCollectionFlags(flags)
 
 	_cret = C.secret_collection_for_alias_sync(_arg1, _arg2, _arg3, _arg4, &_cerr)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(service)
+	runtime.KeepAlive(alias)
+	runtime.KeepAlive(flags)
 
 	var _collection *Collection // out
 	var _goerr error            // out

@@ -3,7 +3,7 @@ module github.com/diamondburned/gotk4-secret
 go 1.17
 
 require (
-	github.com/diamondburned/gotk4 v0.0.0-20210723022814-bb0e7e341e6b
+	github.com/diamondburned/gotk4 v0.0.3-0.20211029022411-ad571a40956f
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 )
 

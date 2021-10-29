@@ -8,11 +8,12 @@ import (
 	"unsafe"
 
 	"github.com/diamondburned/gotk4/pkg/core/gextras"
-	externglib "github.com/gotk3/gotk3/glib"
+	externglib "github.com/diamondburned/gotk4/pkg/core/glib"
 )
 
 // #cgo pkg-config: libsecret-1
 // #cgo CFLAGS: -Wno-deprecated-declarations
+// #include <stdlib.h>
 // #include <glib-object.h>
 // #include <libsecret/secret.h>
 import "C"
@@ -25,18 +26,18 @@ func init() {
 
 // SchemaType: different types of schemas for storing secrets, intended for use
 // with secret_get_schema().
-type SchemaType int
+type SchemaType C.gint
 
 const (
-	// SchemaTypeNote: personal passwords; see SECRET_SCHEMA_NOTE
+	// SchemaTypeNote: personal passwords; see SECRET_SCHEMA_NOTE.
 	SchemaTypeNote SchemaType = iota
 	// SchemaTypeCompatNetwork: network passwords from older libgnome-keyring
-	// storage; see SECRET_SCHEMA_COMPAT_NETWORK
+	// storage; see SECRET_SCHEMA_COMPAT_NETWORK.
 	SchemaTypeCompatNetwork
 )
 
 func marshalSchemaType(p uintptr) (interface{}, error) {
-	return SchemaType(C.g_value_get_enum((*C.GValue)(unsafe.Pointer(p)))), nil
+	return SchemaType(externglib.ValueFromNative(unsafe.Pointer(p)).Enum()), nil
 }
 
 // String returns the name in string for SchemaType.
@@ -55,6 +56,11 @@ func (s SchemaType) String() string {
 //
 // C code may access the schemas (such as SECRET_SCHEMA_NOTE) directly, but
 // language bindings cannot, and must use this accessor.
+//
+// The function takes the following parameters:
+//
+//    - typ: type of schema to get.
+//
 func GetSchema(typ SchemaType) *Schema {
 	var _arg1 C.SecretSchemaType // out
 	var _cret *C.SecretSchema    // in
@@ -62,13 +68,18 @@ func GetSchema(typ SchemaType) *Schema {
 	_arg1 = C.SecretSchemaType(typ)
 
 	_cret = C.secret_get_schema(_arg1)
+	runtime.KeepAlive(typ)
 
 	var _schema *Schema // out
 
 	_schema = (*Schema)(gextras.NewStructNative(unsafe.Pointer(_cret)))
-	runtime.SetFinalizer(_schema, func(v *Schema) {
-		C.secret_schema_unref((*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(v))))
-	})
+	C.secret_schema_ref(_cret)
+	runtime.SetFinalizer(
+		gextras.StructIntern(unsafe.Pointer(_schema)),
+		func(intern *struct{ C unsafe.Pointer }) {
+			C.secret_schema_unref((*C.SecretSchema)(intern.C))
+		},
+	)
 
 	return _schema
 }

@@ -11,13 +11,14 @@ import (
 	"github.com/diamondburned/gotk4/pkg/core/gcancel"
 	"github.com/diamondburned/gotk4/pkg/core/gerror"
 	"github.com/diamondburned/gotk4/pkg/core/gextras"
+	externglib "github.com/diamondburned/gotk4/pkg/core/glib"
 	"github.com/diamondburned/gotk4/pkg/gio/v2"
 	"github.com/diamondburned/gotk4/pkg/glib/v2"
-	externglib "github.com/gotk3/gotk3/glib"
 )
 
 // #cgo pkg-config: libsecret-1
 // #cgo CFLAGS: -Wno-deprecated-declarations
+// #include <stdlib.h>
 // #include <glib-object.h>
 // #include <libsecret/secret.h>
 // void _gotk4_gio2_AsyncReadyCallback(GObject*, GAsyncResult*, gpointer);
@@ -34,6 +35,10 @@ func init() {
 type Prompt struct {
 	gio.DBusProxy
 }
+
+var (
+	_ externglib.Objector = (*Prompt)(nil)
+)
 
 func wrapPrompt(obj *externglib.Object) *Prompt {
 	return &Prompt{
@@ -53,9 +58,7 @@ func wrapPrompt(obj *externglib.Object) *Prompt {
 }
 
 func marshalPrompter(p uintptr) (interface{}, error) {
-	val := C.g_value_get_object((*C.GValue)(unsafe.Pointer(p)))
-	obj := externglib.Take(unsafe.Pointer(val))
-	return wrapPrompt(obj), nil
+	return wrapPrompt(externglib.ValueFromNative(unsafe.Pointer(p)).Object()), nil
 }
 
 // Perform runs a prompt and performs the prompting. Returns TRUE if the prompt
@@ -68,6 +71,15 @@ func marshalPrompter(p uintptr) (interface{}, error) {
 // possible, so the behavior depending on this should degrade gracefully.
 //
 // This method will return immediately and complete asynchronously.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - windowId: string form of XWindow id for parent window to be transient
+//    for.
+//    - returnType: variant type of the prompt result.
+//    - callback: called when the operation completes.
+//
 func (self *Prompt) Perform(ctx context.Context, windowId string, returnType *glib.VariantType, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretPrompt       // out
 	var _arg3 *C.GCancellable       // out
@@ -93,6 +105,11 @@ func (self *Prompt) Perform(ctx context.Context, windowId string, returnType *gl
 	}
 
 	C.secret_prompt_perform(_arg0, _arg1, _arg2, _arg3, _arg4, _arg5)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(windowId)
+	runtime.KeepAlive(returnType)
+	runtime.KeepAlive(callback)
 }
 
 // PerformFinish: complete asynchronous operation to run a prompt and perform
@@ -101,6 +118,11 @@ func (self *Prompt) Perform(ctx context.Context, windowId string, returnType *gl
 // Returns a variant result if the prompt was completed and not dismissed. The
 // type of result depends on the action the prompt is completing, and is defined
 // in the Secret Service DBus API specification.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to the callback.
+//
 func (self *Prompt) PerformFinish(result gio.AsyncResulter) (*glib.Variant, error) {
 	var _arg0 *C.SecretPrompt // out
 	var _arg1 *C.GAsyncResult // out
@@ -111,15 +133,19 @@ func (self *Prompt) PerformFinish(result gio.AsyncResulter) (*glib.Variant, erro
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	_cret = C.secret_prompt_perform_finish(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(result)
 
 	var _variant *glib.Variant // out
 	var _goerr error           // out
 
 	_variant = (*glib.Variant)(gextras.NewStructNative(unsafe.Pointer(_cret)))
-	C.g_variant_ref(_cret)
-	runtime.SetFinalizer(_variant, func(v *glib.Variant) {
-		C.g_variant_unref((*C.GVariant)(gextras.StructNative(unsafe.Pointer(v))))
-	})
+	runtime.SetFinalizer(
+		gextras.StructIntern(unsafe.Pointer(_variant)),
+		func(intern *struct{ C unsafe.Pointer }) {
+			C.g_variant_unref((*C.GVariant)(intern.C))
+		},
+	)
 	if _cerr != nil {
 		_goerr = gerror.Take(unsafe.Pointer(_cerr))
 	}
@@ -140,6 +166,14 @@ func (self *Prompt) PerformFinish(result gio.AsyncResulter) (*glib.Variant, erro
 //
 // This method may block indefinitely and should not be used in user interface
 // threads.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - windowId: string form of XWindow id for parent window to be transient
+//    for.
+//    - returnType: variant type of the prompt result.
+//
 func (self *Prompt) PerformSync(ctx context.Context, windowId string, returnType *glib.VariantType) (*glib.Variant, error) {
 	var _arg0 *C.SecretPrompt // out
 	var _arg2 *C.GCancellable // out
@@ -161,15 +195,21 @@ func (self *Prompt) PerformSync(ctx context.Context, windowId string, returnType
 	_arg3 = (*C.GVariantType)(gextras.StructNative(unsafe.Pointer(returnType)))
 
 	_cret = C.secret_prompt_perform_sync(_arg0, _arg1, _arg2, _arg3, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(windowId)
+	runtime.KeepAlive(returnType)
 
 	var _variant *glib.Variant // out
 	var _goerr error           // out
 
 	_variant = (*glib.Variant)(gextras.NewStructNative(unsafe.Pointer(_cret)))
-	C.g_variant_ref(_cret)
-	runtime.SetFinalizer(_variant, func(v *glib.Variant) {
-		C.g_variant_unref((*C.GVariant)(gextras.StructNative(unsafe.Pointer(v))))
-	})
+	runtime.SetFinalizer(
+		gextras.StructIntern(unsafe.Pointer(_variant)),
+		func(intern *struct{ C unsafe.Pointer }) {
+			C.g_variant_unref((*C.GVariant)(intern.C))
+		},
+	)
 	if _cerr != nil {
 		_goerr = gerror.Take(unsafe.Pointer(_cerr))
 	}
@@ -192,6 +232,14 @@ func (self *Prompt) PerformSync(ctx context.Context, windowId string, returnType
 // thread, this means the user interface will remain responsive. Care should be
 // taken that appropriate user interface actions are disabled while running the
 // prompt.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - windowId: string form of XWindow id for parent window to be transient
+//    for.
+//    - returnType: variant type of the prompt result.
+//
 func (self *Prompt) Run(ctx context.Context, windowId string, returnType *glib.VariantType) (*glib.Variant, error) {
 	var _arg0 *C.SecretPrompt // out
 	var _arg2 *C.GCancellable // out
@@ -213,15 +261,21 @@ func (self *Prompt) Run(ctx context.Context, windowId string, returnType *glib.V
 	_arg3 = (*C.GVariantType)(gextras.StructNative(unsafe.Pointer(returnType)))
 
 	_cret = C.secret_prompt_run(_arg0, _arg1, _arg2, _arg3, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(windowId)
+	runtime.KeepAlive(returnType)
 
 	var _variant *glib.Variant // out
 	var _goerr error           // out
 
 	_variant = (*glib.Variant)(gextras.NewStructNative(unsafe.Pointer(_cret)))
-	C.g_variant_ref(_cret)
-	runtime.SetFinalizer(_variant, func(v *glib.Variant) {
-		C.g_variant_unref((*C.GVariant)(gextras.StructNative(unsafe.Pointer(v))))
-	})
+	runtime.SetFinalizer(
+		gextras.StructIntern(unsafe.Pointer(_variant)),
+		func(intern *struct{ C unsafe.Pointer }) {
+			C.g_variant_unref((*C.GVariant)(intern.C))
+		},
+	)
 	if _cerr != nil {
 		_goerr = gerror.Take(unsafe.Pointer(_cerr))
 	}

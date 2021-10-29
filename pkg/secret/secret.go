@@ -7,11 +7,12 @@ import (
 	_ "runtime/cgo"
 	"unsafe"
 
-	externglib "github.com/gotk3/gotk3/glib"
+	externglib "github.com/diamondburned/gotk4/pkg/core/glib"
 )
 
 // #cgo pkg-config: libsecret-1
 // #cgo CFLAGS: -Wno-deprecated-declarations
+// #include <stdlib.h>
 // #include <glib-object.h>
 // #include <libsecret/secret.h>
 import "C"
@@ -22,7 +23,7 @@ func init() {
 	})
 }
 
-type Error int
+type Error C.gint
 
 const (
 	ErrorProtocol          Error = 1
@@ -33,7 +34,7 @@ const (
 )
 
 func marshalError(p uintptr) (interface{}, error) {
-	return Error(C.g_value_get_enum((*C.GValue)(unsafe.Pointer(p)))), nil
+	return Error(externglib.ValueFromNative(unsafe.Pointer(p)).Enum()), nil
 }
 
 // String returns the name in string for Error.

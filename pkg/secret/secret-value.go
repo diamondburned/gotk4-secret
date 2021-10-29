@@ -7,11 +7,12 @@ import (
 	"unsafe"
 
 	"github.com/diamondburned/gotk4/pkg/core/gextras"
-	externglib "github.com/gotk3/gotk3/glib"
+	externglib "github.com/diamondburned/gotk4/pkg/core/glib"
 )
 
 // #cgo pkg-config: libsecret-1
 // #cgo CFLAGS: -Wno-deprecated-declarations
+// #include <stdlib.h>
 // #include <glib-object.h>
 // #include <libsecret/secret.h>
 import "C"
@@ -23,14 +24,20 @@ func init() {
 }
 
 // Value: secret value, like a password or other binary secret.
+//
+// An instance of this type is always passed by reference.
 type Value struct {
-	nocopy gextras.NoCopy
+	*value
+}
+
+// value is the struct that's finalized.
+type value struct {
 	native *C.SecretValue
 }
 
 func marshalValue(p uintptr) (interface{}, error) {
-	b := C.g_value_get_boxed((*C.GValue)(unsafe.Pointer(p)))
-	return &Value{native: (*C.SecretValue)(unsafe.Pointer(b))}, nil
+	b := externglib.ValueFromNative(unsafe.Pointer(p)).Boxed()
+	return &Value{&value{(*C.SecretValue)(b)}}, nil
 }
 
 // NewValue constructs a struct Value.
@@ -47,16 +54,42 @@ func NewValue(secret string, length int, contentType string) *Value {
 	defer C.free(unsafe.Pointer(_arg3))
 
 	_cret = C.secret_value_new(_arg1, _arg2, _arg3)
+	runtime.KeepAlive(secret)
+	runtime.KeepAlive(length)
+	runtime.KeepAlive(contentType)
 
 	var _value *Value // out
 
 	_value = (*Value)(gextras.NewStructNative(unsafe.Pointer(_cret)))
-	C.secret_value_ref(_cret)
-	runtime.SetFinalizer(_value, func(v *Value) {
-		C.secret_value_unref((C.gpointer)(gextras.StructNative(unsafe.Pointer(v))))
-	})
+	runtime.SetFinalizer(
+		gextras.StructIntern(unsafe.Pointer(_value)),
+		func(intern *struct{ C unsafe.Pointer }) {
+			C.secret_value_unref((C.gpointer)(intern.C))
+		},
+	)
 
 	return _value
+}
+
+// Get the secret data in the Value. The value is not necessarily
+// null-terminated unless it was created with secret_value_new() or a
+// null-terminated string was passed to secret_value_new_full().
+func (value *Value) Get() []byte {
+	var _arg0 *C.SecretValue // out
+	var _cret *C.gchar       // in
+	var _arg1 C.gsize        // in
+
+	_arg0 = (*C.SecretValue)(gextras.StructNative(unsafe.Pointer(value)))
+
+	_cret = C.secret_value_get(_arg0, &_arg1)
+	runtime.KeepAlive(value)
+
+	var _guint8s []byte // out
+
+	_guint8s = make([]byte, _arg1)
+	copy(_guint8s, unsafe.Slice((*byte)(unsafe.Pointer(_cret)), _arg1))
+
+	return _guint8s
 }
 
 // ContentType: get the content type of the secret value, such as
@@ -68,6 +101,7 @@ func (value *Value) ContentType() string {
 	_arg0 = (*C.SecretValue)(gextras.StructNative(unsafe.Pointer(value)))
 
 	_cret = C.secret_value_get_content_type(_arg0)
+	runtime.KeepAlive(value)
 
 	var _utf8 string // out
 
@@ -85,6 +119,7 @@ func (value *Value) Text() string {
 	_arg0 = (*C.SecretValue)(gextras.StructNative(unsafe.Pointer(value)))
 
 	_cret = C.secret_value_get_text(_arg0)
+	runtime.KeepAlive(value)
 
 	var _utf8 string // out
 
@@ -106,6 +141,8 @@ func (value *Value) UnrefToPassword(length *uint) string {
 	_arg1 = (*C.gsize)(unsafe.Pointer(length))
 
 	_cret = C.secret_value_unref_to_password(_arg0, _arg1)
+	runtime.KeepAlive(value)
+	runtime.KeepAlive(length)
 
 	var _utf8 string // out
 

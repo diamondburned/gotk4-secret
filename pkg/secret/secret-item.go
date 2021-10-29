@@ -13,12 +13,13 @@ import (
 	"github.com/diamondburned/gotk4/pkg/core/gcancel"
 	"github.com/diamondburned/gotk4/pkg/core/gerror"
 	"github.com/diamondburned/gotk4/pkg/core/gextras"
+	externglib "github.com/diamondburned/gotk4/pkg/core/glib"
 	"github.com/diamondburned/gotk4/pkg/gio/v2"
-	externglib "github.com/gotk3/gotk3/glib"
 )
 
 // #cgo pkg-config: libsecret-1
 // #cgo CFLAGS: -Wno-deprecated-declarations
+// #include <stdlib.h>
 // #include <glib-object.h>
 // #include <libsecret/secret.h>
 // void _gotk4_gio2_AsyncReadyCallback(GObject*, GAsyncResult*, gpointer);
@@ -33,17 +34,17 @@ func init() {
 }
 
 // ItemCreateFlags flags for secret_item_create().
-type ItemCreateFlags int
+type ItemCreateFlags C.guint
 
 const (
-	// ItemCreateNone: no flags
+	// ItemCreateNone: no flags.
 	ItemCreateNone ItemCreateFlags = 0b0
-	// ItemCreateReplace an item with the same attributes.
+	// ItemCreateReplace: replace an item with the same attributes.
 	ItemCreateReplace ItemCreateFlags = 0b10
 )
 
 func marshalItemCreateFlags(p uintptr) (interface{}, error) {
-	return ItemCreateFlags(C.g_value_get_enum((*C.GValue)(unsafe.Pointer(p)))), nil
+	return ItemCreateFlags(externglib.ValueFromNative(unsafe.Pointer(p)).Flags()), nil
 }
 
 // String returns the names in string for ItemCreateFlags.
@@ -74,19 +75,24 @@ func (i ItemCreateFlags) String() string {
 	return strings.TrimSuffix(builder.String(), "|")
 }
 
+// Has returns true if i contains other.
+func (i ItemCreateFlags) Has(other ItemCreateFlags) bool {
+	return (i & other) == other
+}
+
 // ItemFlags flags which determine which parts of the Item proxy are
 // initialized.
-type ItemFlags int
+type ItemFlags C.guint
 
 const (
-	// ItemNone: no flags
+	// ItemNone: no flags.
 	ItemNone ItemFlags = 0b0
-	// ItemLoadSecret: secret has been (or should be) loaded for Item
+	// ItemLoadSecret: secret has been (or should be) loaded for Item.
 	ItemLoadSecret ItemFlags = 0b10
 )
 
 func marshalItemFlags(p uintptr) (interface{}, error) {
-	return ItemFlags(C.g_value_get_enum((*C.GValue)(unsafe.Pointer(p)))), nil
+	return ItemFlags(externglib.ValueFromNative(unsafe.Pointer(p)).Flags()), nil
 }
 
 // String returns the names in string for ItemFlags.
@@ -117,6 +123,11 @@ func (i ItemFlags) String() string {
 	return strings.TrimSuffix(builder.String(), "|")
 }
 
+// Has returns true if i contains other.
+func (i ItemFlags) Has(other ItemFlags) bool {
+	return (i & other) == other
+}
+
 // Item: proxy object representing a secret item in the Secret Service.
 type Item struct {
 	gio.DBusProxy
@@ -124,6 +135,10 @@ type Item struct {
 	Retrievable
 	*externglib.Object
 }
+
+var (
+	_ externglib.Objector = (*Item)(nil)
+)
 
 func wrapItem(obj *externglib.Object) *Item {
 	return &Item{
@@ -147,9 +162,7 @@ func wrapItem(obj *externglib.Object) *Item {
 }
 
 func marshalItemmer(p uintptr) (interface{}, error) {
-	val := C.g_value_get_object((*C.GValue)(unsafe.Pointer(p)))
-	obj := externglib.Take(unsafe.Pointer(val))
-	return wrapItem(obj), nil
+	return wrapItem(externglib.ValueFromNative(unsafe.Pointer(p)).Object()), nil
 }
 
 // Delete this item.
@@ -157,6 +170,12 @@ func marshalItemmer(p uintptr) (interface{}, error) {
 // This method returns immediately and completes asynchronously. The secret
 // service may prompt the user. secret_service_prompt() will be used to handle
 // any prompts that show up.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - callback: called when the operation completes.
+//
 func (self *Item) Delete(ctx context.Context, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretItem         // out
 	var _arg1 *C.GCancellable       // out
@@ -175,9 +194,17 @@ func (self *Item) Delete(ctx context.Context, callback gio.AsyncReadyCallback) {
 	}
 
 	C.secret_item_delete(_arg0, _arg1, _arg2, _arg3)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(callback)
 }
 
 // DeleteFinish: complete asynchronous operation to delete the secret item.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to the callback.
+//
 func (self *Item) DeleteFinish(result gio.AsyncResulter) error {
 	var _arg0 *C.SecretItem   // out
 	var _arg1 *C.GAsyncResult // out
@@ -187,6 +214,8 @@ func (self *Item) DeleteFinish(result gio.AsyncResulter) error {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	C.secret_item_delete_finish(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(result)
 
 	var _goerr error // out
 
@@ -202,6 +231,11 @@ func (self *Item) DeleteFinish(result gio.AsyncResulter) error {
 // This method may block indefinitely and should not be used in user interface
 // threads. The secret service may prompt the user. secret_service_prompt() will
 // be used to handle any prompts that show up.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//
 func (self *Item) DeleteSync(ctx context.Context) error {
 	var _arg0 *C.SecretItem   // out
 	var _arg1 *C.GCancellable // out
@@ -215,6 +249,8 @@ func (self *Item) DeleteSync(ctx context.Context) error {
 	}
 
 	C.secret_item_delete_sync(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
 
 	var _goerr error // out
 
@@ -240,6 +276,7 @@ func (self *Item) Attributes() map[string]string {
 	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
 
 	_cret = C.secret_item_get_attributes(_arg0)
+	runtime.KeepAlive(self)
 
 	var _hashTable map[string]string // out
 
@@ -268,6 +305,7 @@ func (self *Item) Created() uint64 {
 	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
 
 	_cret = C.secret_item_get_created(_arg0)
+	runtime.KeepAlive(self)
 
 	var _guint64 uint64 // out
 
@@ -288,6 +326,7 @@ func (self *Item) Flags() ItemFlags {
 	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
 
 	_cret = C.secret_item_get_flags(_arg0)
+	runtime.KeepAlive(self)
 
 	var _itemFlags ItemFlags // out
 
@@ -304,6 +343,7 @@ func (self *Item) Label() string {
 	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
 
 	_cret = C.secret_item_get_label(_arg0)
+	runtime.KeepAlive(self)
 
 	var _utf8 string // out
 
@@ -324,6 +364,7 @@ func (self *Item) Locked() bool {
 	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
 
 	_cret = C.secret_item_get_locked(_arg0)
+	runtime.KeepAlive(self)
 
 	var _ok bool // out
 
@@ -343,6 +384,7 @@ func (self *Item) Modified() uint64 {
 	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
 
 	_cret = C.secret_item_get_modified(_arg0)
+	runtime.KeepAlive(self)
 
 	var _guint64 uint64 // out
 
@@ -360,6 +402,7 @@ func (self *Item) SchemaName() string {
 	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
 
 	_cret = C.secret_item_get_schema_name(_arg0)
+	runtime.KeepAlive(self)
 
 	var _utf8 string // out
 
@@ -382,15 +425,18 @@ func (self *Item) Secret() *Value {
 	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
 
 	_cret = C.secret_item_get_secret(_arg0)
+	runtime.KeepAlive(self)
 
 	var _value *Value // out
 
 	if _cret != nil {
 		_value = (*Value)(gextras.NewStructNative(unsafe.Pointer(_cret)))
-		C.secret_value_ref(_cret)
-		runtime.SetFinalizer(_value, func(v *Value) {
-			C.secret_value_unref((C.gpointer)(gextras.StructNative(unsafe.Pointer(v))))
-		})
+		runtime.SetFinalizer(
+			gextras.StructIntern(unsafe.Pointer(_value)),
+			func(intern *struct{ C unsafe.Pointer }) {
+				C.secret_value_unref((C.gpointer)(intern.C))
+			},
+		)
 	}
 
 	return _value
@@ -404,6 +450,7 @@ func (self *Item) Service() *Service {
 	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
 
 	_cret = C.secret_item_get_service(_arg0)
+	runtime.KeepAlive(self)
 
 	var _service *Service // out
 
@@ -420,6 +467,12 @@ func (self *Item) Service() *Service {
 // This function will fail if the secret item is locked.
 //
 // This function returns immediately and completes asynchronously.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - callback: called when the operation completes.
+//
 func (self *Item) LoadSecret(ctx context.Context, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretItem         // out
 	var _arg1 *C.GCancellable       // out
@@ -438,6 +491,9 @@ func (self *Item) LoadSecret(ctx context.Context, callback gio.AsyncReadyCallbac
 	}
 
 	C.secret_item_load_secret(_arg0, _arg1, _arg2, _arg3)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(callback)
 }
 
 // LoadSecretFinish: complete asynchronous operation to load the secret value of
@@ -445,6 +501,11 @@ func (self *Item) LoadSecret(ctx context.Context, callback gio.AsyncReadyCallbac
 //
 // The newly loaded secret value can be accessed by calling
 // secret_item_get_secret().
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to callback.
+//
 func (self *Item) LoadSecretFinish(result gio.AsyncResulter) error {
 	var _arg0 *C.SecretItem   // out
 	var _arg1 *C.GAsyncResult // out
@@ -454,6 +515,8 @@ func (self *Item) LoadSecretFinish(result gio.AsyncResulter) error {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	C.secret_item_load_secret_finish(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(result)
 
 	var _goerr error // out
 
@@ -471,6 +534,11 @@ func (self *Item) LoadSecretFinish(result gio.AsyncResulter) error {
 //
 // This function may block indefinitely. Use the asynchronous version in user
 // interface threads.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//
 func (self *Item) LoadSecretSync(ctx context.Context) error {
 	var _arg0 *C.SecretItem   // out
 	var _arg1 *C.GCancellable // out
@@ -484,6 +552,8 @@ func (self *Item) LoadSecretSync(ctx context.Context) error {
 	}
 
 	C.secret_item_load_secret_sync(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
 
 	var _goerr error // out
 
@@ -505,6 +575,7 @@ func (self *Item) Refresh() {
 	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
 
 	C.secret_item_refresh(_arg0)
+	runtime.KeepAlive(self)
 }
 
 // SetAttributes: set the attributes of this item.
@@ -514,6 +585,14 @@ func (self *Item) Refresh() {
 // by the secret service.
 //
 // This function returns immediately and completes asynchronously.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - schema for the attributes.
+//    - attributes: new set of attributes.
+//    - callback: called when the asynchronous operation completes.
+//
 func (self *Item) SetAttributes(ctx context.Context, schema *Schema, attributes map[string]string, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretItem         // out
 	var _arg3 *C.GCancellable       // out
@@ -548,9 +627,19 @@ func (self *Item) SetAttributes(ctx context.Context, schema *Schema, attributes 
 	}
 
 	C.secret_item_set_attributes(_arg0, _arg1, _arg2, _arg3, _arg4, _arg5)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
+	runtime.KeepAlive(callback)
 }
 
 // SetAttributesFinish: complete operation to set the attributes of this item.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to the callback.
+//
 func (self *Item) SetAttributesFinish(result gio.AsyncResulter) error {
 	var _arg0 *C.SecretItem   // out
 	var _arg1 *C.GAsyncResult // out
@@ -560,6 +649,8 @@ func (self *Item) SetAttributesFinish(result gio.AsyncResulter) error {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	C.secret_item_set_attributes_finish(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(result)
 
 	var _goerr error // out
 
@@ -578,6 +669,13 @@ func (self *Item) SetAttributesFinish(result gio.AsyncResulter) error {
 //
 // This function may block indefinitely. Use the asynchronous version in user
 // interface threads.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - schema for the attributes.
+//    - attributes: new set of attributes.
+//
 func (self *Item) SetAttributesSync(ctx context.Context, schema *Schema, attributes map[string]string) error {
 	var _arg0 *C.SecretItem   // out
 	var _arg3 *C.GCancellable // out
@@ -607,6 +705,10 @@ func (self *Item) SetAttributesSync(ctx context.Context, schema *Schema, attribu
 	defer C.g_hash_table_unref(_arg2)
 
 	C.secret_item_set_attributes_sync(_arg0, _arg1, _arg2, _arg3, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
 
 	var _goerr error // out
 
@@ -620,6 +722,13 @@ func (self *Item) SetAttributesSync(ctx context.Context, schema *Schema, attribu
 // SetLabel: set the label of this item.
 //
 // This function returns immediately and completes asynchronously.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - label: new label.
+//    - callback: called when the operation completes.
+//
 func (self *Item) SetLabel(ctx context.Context, label string, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretItem         // out
 	var _arg2 *C.GCancellable       // out
@@ -641,10 +750,19 @@ func (self *Item) SetLabel(ctx context.Context, label string, callback gio.Async
 	}
 
 	C.secret_item_set_label(_arg0, _arg1, _arg2, _arg3, _arg4)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(label)
+	runtime.KeepAlive(callback)
 }
 
 // SetLabelFinish: complete asynchronous operation to set the label of this
 // collection.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to callback.
+//
 func (self *Item) SetLabelFinish(result gio.AsyncResulter) error {
 	var _arg0 *C.SecretItem   // out
 	var _arg1 *C.GAsyncResult // out
@@ -654,6 +772,8 @@ func (self *Item) SetLabelFinish(result gio.AsyncResulter) error {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	C.secret_item_set_label_finish(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(result)
 
 	var _goerr error // out
 
@@ -668,6 +788,12 @@ func (self *Item) SetLabelFinish(result gio.AsyncResulter) error {
 //
 // This function may block indefinitely. Use the asynchronous version in user
 // interface threads.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - label: new label.
+//
 func (self *Item) SetLabelSync(ctx context.Context, label string) error {
 	var _arg0 *C.SecretItem   // out
 	var _arg2 *C.GCancellable // out
@@ -684,6 +810,9 @@ func (self *Item) SetLabelSync(ctx context.Context, label string) error {
 	defer C.free(unsafe.Pointer(_arg1))
 
 	C.secret_item_set_label_sync(_arg0, _arg1, _arg2, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(label)
 
 	var _goerr error // out
 
@@ -700,6 +829,13 @@ func (self *Item) SetLabelSync(ctx context.Context, label string) error {
 // binary value.
 //
 // This function returns immediately and completes asynchronously.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - value: new secret value.
+//    - callback: called when the operation completes.
+//
 func (self *Item) SetSecret(ctx context.Context, value *Value, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretItem         // out
 	var _arg2 *C.GCancellable       // out
@@ -720,10 +856,19 @@ func (self *Item) SetSecret(ctx context.Context, value *Value, callback gio.Asyn
 	}
 
 	C.secret_item_set_secret(_arg0, _arg1, _arg2, _arg3, _arg4)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(value)
+	runtime.KeepAlive(callback)
 }
 
 // SetSecretFinish: complete asynchronous operation to set the secret value of
 // this item.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to callback.
+//
 func (self *Item) SetSecretFinish(result gio.AsyncResulter) error {
 	var _arg0 *C.SecretItem   // out
 	var _arg1 *C.GAsyncResult // out
@@ -733,6 +878,8 @@ func (self *Item) SetSecretFinish(result gio.AsyncResulter) error {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	C.secret_item_set_secret_finish(_arg0, _arg1, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(result)
 
 	var _goerr error // out
 
@@ -750,6 +897,12 @@ func (self *Item) SetSecretFinish(result gio.AsyncResulter) error {
 //
 // This function may block indefinitely. Use the asynchronous version in user
 // interface threads.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - value: new secret value.
+//
 func (self *Item) SetSecretSync(ctx context.Context, value *Value) error {
 	var _arg0 *C.SecretItem   // out
 	var _arg2 *C.GCancellable // out
@@ -765,6 +918,9 @@ func (self *Item) SetSecretSync(ctx context.Context, value *Value) error {
 	_arg1 = (*C.SecretValue)(gextras.StructNative(unsafe.Pointer(value)))
 
 	C.secret_item_set_secret_sync(_arg0, _arg1, _arg2, &_cerr)
+	runtime.KeepAlive(self)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(value)
 
 	var _goerr error // out
 
@@ -784,6 +940,18 @@ func (self *Item) SetSecretSync(ctx context.Context, value *Value) error {
 // This method may block indefinitely and should not be used in user interface
 // threads. The secret service may prompt the user. secret_service_prompt() will
 // be used to handle any prompts that are required.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - collection: secret collection to create this item in.
+//    - schema for the attributes.
+//    - attributes for the new item.
+//    - label for the new item.
+//    - value: secret value for the new item.
+//    - flags for the creation of the new item.
+//    - callback: called when the operation completes.
+//
 func ItemCreate(ctx context.Context, collection *Collection, schema *Schema, attributes map[string]string, label string, value *Value, flags ItemCreateFlags, callback gio.AsyncReadyCallback) {
 	var _arg7 *C.GCancellable         // out
 	var _arg1 *C.SecretCollection     // out
@@ -825,10 +993,23 @@ func ItemCreate(ctx context.Context, collection *Collection, schema *Schema, att
 	}
 
 	C.secret_item_create(_arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, _arg8, _arg9)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(collection)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
+	runtime.KeepAlive(label)
+	runtime.KeepAlive(value)
+	runtime.KeepAlive(flags)
+	runtime.KeepAlive(callback)
 }
 
 // ItemCreateFinish: finish operation to create a new item in the secret
 // service.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to the callback.
+//
 func ItemCreateFinish(result gio.AsyncResulter) (*Item, error) {
 	var _arg1 *C.GAsyncResult // out
 	var _cret *C.SecretItem   // in
@@ -837,6 +1018,7 @@ func ItemCreateFinish(result gio.AsyncResulter) (*Item, error) {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	_cret = C.secret_item_create_finish(_arg1, &_cerr)
+	runtime.KeepAlive(result)
 
 	var _item *Item  // out
 	var _goerr error // out
@@ -858,6 +1040,17 @@ func ItemCreateFinish(result gio.AsyncResulter) (*Item, error) {
 // This method may block indefinitely and should not be used in user interface
 // threads. The secret service may prompt the user. secret_service_prompt() will
 // be used to handle any prompts that are required.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - collection: secret collection to create this item in.
+//    - schema for the attributes.
+//    - attributes for the new item.
+//    - label for the new item.
+//    - value: secret value for the new item.
+//    - flags for the creation of the new item.
+//
 func ItemCreateSync(ctx context.Context, collection *Collection, schema *Schema, attributes map[string]string, label string, value *Value, flags ItemCreateFlags) (*Item, error) {
 	var _arg7 *C.GCancellable         // out
 	var _arg1 *C.SecretCollection     // out
@@ -895,6 +1088,13 @@ func ItemCreateSync(ctx context.Context, collection *Collection, schema *Schema,
 	_arg6 = C.SecretItemCreateFlags(flags)
 
 	_cret = C.secret_item_create_sync(_arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, &_cerr)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(collection)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
+	runtime.KeepAlive(label)
+	runtime.KeepAlive(value)
+	runtime.KeepAlive(flags)
 
 	var _item *Item  // out
 	var _goerr error // out
@@ -913,6 +1113,13 @@ func ItemCreateSync(ctx context.Context, collection *Collection, schema *Schema,
 // The items must all have the same SecretItem::service property.
 //
 // This function returns immediately and completes asynchronously.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - items to retrieve secrets for.
+//    - callback: called when the operation completes.
+//
 func ItemLoadSecrets(ctx context.Context, items []Item, callback gio.AsyncReadyCallback) {
 	var _arg2 *C.GCancellable       // out
 	var _arg1 *C.GList              // out
@@ -937,12 +1144,20 @@ func ItemLoadSecrets(ctx context.Context, items []Item, callback gio.AsyncReadyC
 	}
 
 	C.secret_item_load_secrets(_arg1, _arg2, _arg3, _arg4)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(items)
+	runtime.KeepAlive(callback)
 }
 
 // ItemLoadSecretsFinish: complete asynchronous operation to load the secret
 // values for secret items stored in the service.
 //
 // Items that are locked will not have their secrets loaded.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to callback.
+//
 func ItemLoadSecretsFinish(result gio.AsyncResulter) error {
 	var _arg1 *C.GAsyncResult // out
 	var _cerr *C.GError       // in
@@ -950,6 +1165,7 @@ func ItemLoadSecretsFinish(result gio.AsyncResulter) error {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	C.secret_item_load_secrets_finish(_arg1, &_cerr)
+	runtime.KeepAlive(result)
 
 	var _goerr error // out
 
@@ -969,6 +1185,12 @@ func ItemLoadSecretsFinish(result gio.AsyncResulter) error {
 // threads.
 //
 // Items that are locked will not have their secrets loaded.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - items to retrieve secrets for.
+//
 func ItemLoadSecretsSync(ctx context.Context, items []Item) error {
 	var _arg2 *C.GCancellable // out
 	var _arg1 *C.GList        // out
@@ -988,6 +1210,8 @@ func ItemLoadSecretsSync(ctx context.Context, items []Item) error {
 	defer C.g_list_free(_arg1)
 
 	C.secret_item_load_secrets_sync(_arg1, _arg2, &_cerr)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(items)
 
 	var _goerr error // out
 

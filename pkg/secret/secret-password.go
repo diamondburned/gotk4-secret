@@ -11,18 +11,24 @@ import (
 	"github.com/diamondburned/gotk4/pkg/core/gcancel"
 	"github.com/diamondburned/gotk4/pkg/core/gerror"
 	"github.com/diamondburned/gotk4/pkg/core/gextras"
+	externglib "github.com/diamondburned/gotk4/pkg/core/glib"
 	"github.com/diamondburned/gotk4/pkg/gio/v2"
-	externglib "github.com/gotk3/gotk3/glib"
 )
 
 // #cgo pkg-config: libsecret-1
 // #cgo CFLAGS: -Wno-deprecated-declarations
+// #include <stdlib.h>
 // #include <libsecret/secret.h>
 // void _gotk4_gio2_AsyncReadyCallback(GObject*, GAsyncResult*, gpointer);
 import "C"
 
 // PasswordClearFinish: finish an asynchronous operation to remove passwords
 // from the secret service.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to the callback.
+//
 func PasswordClearFinish(result gio.AsyncResulter) error {
 	var _arg1 *C.GAsyncResult // out
 	var _cerr *C.GError       // in
@@ -30,6 +36,7 @@ func PasswordClearFinish(result gio.AsyncResulter) error {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	C.secret_password_clear_finish(_arg1, &_cerr)
+	runtime.KeepAlive(result)
 
 	var _goerr error // out
 
@@ -47,6 +54,14 @@ func PasswordClearFinish(result gio.AsyncResulter) error {
 // All unlocked items that match the attributes will be deleted.
 //
 // This method will return immediately and complete asynchronously.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - schema for the attributes.
+//    - attributes: attribute keys and values.
+//    - callback: called when the operation completes.
+//
 func PasswordClear(ctx context.Context, schema *Schema, attributes map[string]string, callback gio.AsyncReadyCallback) {
 	var _arg3 *C.GCancellable       // out
 	var _arg1 *C.SecretSchema       // out
@@ -76,6 +91,10 @@ func PasswordClear(ctx context.Context, schema *Schema, attributes map[string]st
 	}
 
 	C.secret_password_clearv(_arg1, _arg2, _arg3, _arg4, _arg5)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
+	runtime.KeepAlive(callback)
 }
 
 // PasswordClearSync: remove unlocked matching passwords from the secret
@@ -87,6 +106,13 @@ func PasswordClear(ctx context.Context, schema *Schema, attributes map[string]st
 //
 // This method may block indefinitely and should not be used in user interface
 // threads.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - schema for the attributes.
+//    - attributes: attribute keys and values.
+//
 func PasswordClearSync(ctx context.Context, schema *Schema, attributes map[string]string) error {
 	var _arg3 *C.GCancellable // out
 	var _arg1 *C.SecretSchema // out
@@ -114,6 +140,9 @@ func PasswordClearSync(ctx context.Context, schema *Schema, attributes map[strin
 	defer C.g_hash_table_unref(_arg2)
 
 	C.secret_password_clearv_sync(_arg1, _arg2, _arg3, &_cerr)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
 
 	var _goerr error // out
 
@@ -126,6 +155,11 @@ func PasswordClearSync(ctx context.Context, schema *Schema, attributes map[strin
 
 // PasswordLookupFinish: finish an asynchronous operation to lookup a password
 // in the secret service.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to the callback.
+//
 func PasswordLookupFinish(result gio.AsyncResulter) (string, error) {
 	var _arg1 *C.GAsyncResult // out
 	var _cret *C.gchar        // in
@@ -134,6 +168,7 @@ func PasswordLookupFinish(result gio.AsyncResulter) (string, error) {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	_cret = C.secret_password_lookup_finish(_arg1, &_cerr)
+	runtime.KeepAlive(result)
 
 	var _utf8 string // out
 	var _goerr error // out
@@ -154,6 +189,14 @@ func PasswordLookupFinish(result gio.AsyncResulter) (string, error) {
 // If no secret is found then NULL is returned.
 //
 // This method will return immediately and complete asynchronously.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - schema for attributes.
+//    - attributes: attribute keys and values.
+//    - callback: called when the operation completes.
+//
 func PasswordLookup(ctx context.Context, schema *Schema, attributes map[string]string, callback gio.AsyncReadyCallback) {
 	var _arg3 *C.GCancellable       // out
 	var _arg1 *C.SecretSchema       // out
@@ -183,6 +226,10 @@ func PasswordLookup(ctx context.Context, schema *Schema, attributes map[string]s
 	}
 
 	C.secret_password_lookupv(_arg1, _arg2, _arg3, _arg4, _arg5)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
+	runtime.KeepAlive(callback)
 }
 
 // PasswordLookupSync: lookup a password in the secret service.
@@ -193,6 +240,13 @@ func PasswordLookup(ctx context.Context, schema *Schema, attributes map[string]s
 //
 // This method may block indefinitely and should not be used in user interface
 // threads.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - schema for attributes.
+//    - attributes: attribute keys and values.
+//
 func PasswordLookupSync(ctx context.Context, schema *Schema, attributes map[string]string) (string, error) {
 	var _arg3 *C.GCancellable // out
 	var _arg1 *C.SecretSchema // out
@@ -221,6 +275,9 @@ func PasswordLookupSync(ctx context.Context, schema *Schema, attributes map[stri
 	defer C.g_hash_table_unref(_arg2)
 
 	_cret = C.secret_password_lookupv_sync(_arg1, _arg2, _arg3, &_cerr)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
 
 	var _utf8 string // out
 	var _goerr error // out
@@ -236,6 +293,11 @@ func PasswordLookupSync(ctx context.Context, schema *Schema, attributes map[stri
 
 // PasswordSearchFinish: finish an asynchronous operation to search for items in
 // the secret service.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to the callback.
+//
 func PasswordSearchFinish(result gio.AsyncResulter) ([]Retrievabler, error) {
 	var _arg1 *C.GAsyncResult // out
 	var _cret *C.GList        // in
@@ -244,6 +306,7 @@ func PasswordSearchFinish(result gio.AsyncResulter) ([]Retrievabler, error) {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	_cret = C.secret_password_search_finish(_arg1, &_cerr)
+	runtime.KeepAlive(result)
 
 	var _list []Retrievabler // out
 	var _goerr error         // out
@@ -252,7 +315,19 @@ func PasswordSearchFinish(result gio.AsyncResulter) ([]Retrievabler, error) {
 	gextras.MoveList(unsafe.Pointer(_cret), true, func(v unsafe.Pointer) {
 		src := (*C.SecretRetrievable)(v)
 		var dst Retrievabler // out
-		dst = (gextras.CastObject(externglib.AssumeOwnership(unsafe.Pointer(src)))).(Retrievabler)
+		{
+			objptr := unsafe.Pointer(src)
+			if objptr == nil {
+				panic("object of type secret.Retrievabler is nil")
+			}
+
+			object := externglib.AssumeOwnership(objptr)
+			rv, ok := (externglib.CastObject(object)).(Retrievabler)
+			if !ok {
+				panic("object of type " + object.TypeFromInstance().String() + " is not secret.Retrievabler")
+			}
+			dst = rv
+		}
 		_list = append(_list, dst)
 	})
 	if _cerr != nil {
@@ -267,6 +342,15 @@ func PasswordSearchFinish(result gio.AsyncResulter) ([]Retrievabler, error) {
 // The attributes should be a set of key and value string pairs.
 //
 // This method will return immediately and complete asynchronously.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - schema for attributes.
+//    - attributes: attribute keys and values.
+//    - flags: search option flags.
+//    - callback: called when the operation completes.
+//
 func PasswordSearch(ctx context.Context, schema *Schema, attributes map[string]string, flags SearchFlags, callback gio.AsyncReadyCallback) {
 	var _arg4 *C.GCancellable       // out
 	var _arg1 *C.SecretSchema       // out
@@ -298,6 +382,11 @@ func PasswordSearch(ctx context.Context, schema *Schema, attributes map[string]s
 	}
 
 	C.secret_password_searchv(_arg1, _arg2, _arg3, _arg4, _arg5, _arg6)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
+	runtime.KeepAlive(flags)
+	runtime.KeepAlive(callback)
 }
 
 // PasswordSearchSync: search for items in the secret service.
@@ -308,6 +397,14 @@ func PasswordSearch(ctx context.Context, schema *Schema, attributes map[string]s
 //
 // This method may block indefinitely and should not be used in user interface
 // threads.
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - schema for attributes.
+//    - attributes: attribute keys and values.
+//    - flags: search option flags.
+//
 func PasswordSearchSync(ctx context.Context, schema *Schema, attributes map[string]string, flags SearchFlags) ([]Retrievabler, error) {
 	var _arg4 *C.GCancellable     // out
 	var _arg1 *C.SecretSchema     // out
@@ -338,6 +435,10 @@ func PasswordSearchSync(ctx context.Context, schema *Schema, attributes map[stri
 	_arg3 = C.SecretSearchFlags(flags)
 
 	_cret = C.secret_password_searchv_sync(_arg1, _arg2, _arg3, _arg4, &_cerr)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
+	runtime.KeepAlive(flags)
 
 	var _list []Retrievabler // out
 	var _goerr error         // out
@@ -346,7 +447,19 @@ func PasswordSearchSync(ctx context.Context, schema *Schema, attributes map[stri
 	gextras.MoveList(unsafe.Pointer(_cret), true, func(v unsafe.Pointer) {
 		src := (*C.SecretRetrievable)(v)
 		var dst Retrievabler // out
-		dst = (gextras.CastObject(externglib.AssumeOwnership(unsafe.Pointer(src)))).(Retrievabler)
+		{
+			objptr := unsafe.Pointer(src)
+			if objptr == nil {
+				panic("object of type secret.Retrievabler is nil")
+			}
+
+			object := externglib.AssumeOwnership(objptr)
+			rv, ok := (externglib.CastObject(object)).(Retrievabler)
+			if !ok {
+				panic("object of type " + object.TypeFromInstance().String() + " is not secret.Retrievabler")
+			}
+			dst = rv
+		}
 		_list = append(_list, dst)
 	})
 	if _cerr != nil {
@@ -358,6 +471,11 @@ func PasswordSearchSync(ctx context.Context, schema *Schema, attributes map[stri
 
 // PasswordStoreFinish: finish asynchronous operation to store a password in the
 // secret service.
+//
+// The function takes the following parameters:
+//
+//    - result asynchronous result passed to the callback.
+//
 func PasswordStoreFinish(result gio.AsyncResulter) error {
 	var _arg1 *C.GAsyncResult // out
 	var _cerr *C.GError       // in
@@ -365,6 +483,7 @@ func PasswordStoreFinish(result gio.AsyncResulter) error {
 	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
 
 	C.secret_password_store_finish(_arg1, &_cerr)
+	runtime.KeepAlive(result)
 
 	var _goerr error // out
 
@@ -387,7 +506,19 @@ func PasswordStoreFinish(result gio.AsyncResulter) error {
 // which doesn't get stored across login sessions.
 //
 // This method will return immediately and complete asynchronously.
-func PasswordStore(ctx context.Context, schema *Schema, attributes map[string]string, collection string, label string, password string, callback gio.AsyncReadyCallback) {
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - schema for attributes.
+//    - attributes: attribute keys and values.
+//    - collection alias, or D-Bus object path of the collection where to store
+//    the secret.
+//    - label for the secret.
+//    - password: null-terminated password to store.
+//    - callback: called when the operation completes.
+//
+func PasswordStore(ctx context.Context, schema *Schema, attributes map[string]string, collection, label, password string, callback gio.AsyncReadyCallback) {
 	var _arg6 *C.GCancellable       // out
 	var _arg1 *C.SecretSchema       // out
 	var _arg2 *C.GHashTable         // out
@@ -427,6 +558,13 @@ func PasswordStore(ctx context.Context, schema *Schema, attributes map[string]st
 	}
 
 	C.secret_password_storev(_arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, _arg8)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
+	runtime.KeepAlive(collection)
+	runtime.KeepAlive(label)
+	runtime.KeepAlive(password)
+	runtime.KeepAlive(callback)
 }
 
 // PasswordStoreBinary: store a password in the secret service.
@@ -435,7 +573,19 @@ func PasswordStore(ctx context.Context, schema *Schema, attributes map[string]st
 // argument instead of a null-terminated password.
 //
 // This method will return immediately and complete asynchronously.
-func PasswordStoreBinary(ctx context.Context, schema *Schema, attributes map[string]string, collection string, label string, value *Value, callback gio.AsyncReadyCallback) {
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - schema for attributes.
+//    - attributes: attribute keys and values.
+//    - collection alias, or D-Bus object path of the collection where to store
+//    the secret.
+//    - label for the secret.
+//    - value: Value.
+//    - callback: called when the operation completes.
+//
+func PasswordStoreBinary(ctx context.Context, schema *Schema, attributes map[string]string, collection, label string, value *Value, callback gio.AsyncReadyCallback) {
 	var _arg6 *C.GCancellable       // out
 	var _arg1 *C.SecretSchema       // out
 	var _arg2 *C.GHashTable         // out
@@ -474,6 +624,13 @@ func PasswordStoreBinary(ctx context.Context, schema *Schema, attributes map[str
 	}
 
 	C.secret_password_storev_binary(_arg1, _arg2, _arg3, _arg4, _arg5, _arg6, _arg7, _arg8)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
+	runtime.KeepAlive(collection)
+	runtime.KeepAlive(label)
+	runtime.KeepAlive(value)
+	runtime.KeepAlive(callback)
 }
 
 // PasswordStoreBinarySync: store a password in the secret service.
@@ -483,7 +640,18 @@ func PasswordStoreBinary(ctx context.Context, schema *Schema, attributes map[str
 //
 // This method may block indefinitely and should not be used in user interface
 // threads.
-func PasswordStoreBinarySync(ctx context.Context, schema *Schema, attributes map[string]string, collection string, label string, value *Value) error {
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - schema for attributes.
+//    - attributes: attribute keys and values.
+//    - collection alias, or D-Bus object path of the collection where to store
+//    the secret.
+//    - label for the secret.
+//    - value: Value.
+//
+func PasswordStoreBinarySync(ctx context.Context, schema *Schema, attributes map[string]string, collection, label string, value *Value) error {
 	var _arg6 *C.GCancellable // out
 	var _arg1 *C.SecretSchema // out
 	var _arg2 *C.GHashTable   // out
@@ -520,6 +688,12 @@ func PasswordStoreBinarySync(ctx context.Context, schema *Schema, attributes map
 	_arg5 = (*C.SecretValue)(gextras.StructNative(unsafe.Pointer(value)))
 
 	C.secret_password_storev_binary_sync(_arg1, _arg2, _arg3, _arg4, _arg5, _arg6, &_cerr)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
+	runtime.KeepAlive(collection)
+	runtime.KeepAlive(label)
+	runtime.KeepAlive(value)
 
 	var _goerr error // out
 
@@ -543,7 +717,18 @@ func PasswordStoreBinarySync(ctx context.Context, schema *Schema, attributes map
 //
 // This method may block indefinitely and should not be used in user interface
 // threads.
-func PasswordStoreSync(ctx context.Context, schema *Schema, attributes map[string]string, collection string, label string, password string) error {
+//
+// The function takes the following parameters:
+//
+//    - ctx: optional cancellation object.
+//    - schema for attributes.
+//    - attributes: attribute keys and values.
+//    - collection alias, or D-Bus object path of the collection where to store
+//    the secret.
+//    - label for the secret.
+//    - password: null-terminated password to store.
+//
+func PasswordStoreSync(ctx context.Context, schema *Schema, attributes map[string]string, collection, label, password string) error {
 	var _arg6 *C.GCancellable // out
 	var _arg1 *C.SecretSchema // out
 	var _arg2 *C.GHashTable   // out
@@ -581,6 +766,12 @@ func PasswordStoreSync(ctx context.Context, schema *Schema, attributes map[strin
 	defer C.free(unsafe.Pointer(_arg5))
 
 	C.secret_password_storev_sync(_arg1, _arg2, _arg3, _arg4, _arg5, _arg6, &_cerr)
+	runtime.KeepAlive(ctx)
+	runtime.KeepAlive(schema)
+	runtime.KeepAlive(attributes)
+	runtime.KeepAlive(collection)
+	runtime.KeepAlive(label)
+	runtime.KeepAlive(password)
 
 	var _goerr error // out
 
@@ -592,6 +783,11 @@ func PasswordStoreSync(ctx context.Context, schema *Schema, attributes map[strin
 }
 
 // PasswordWipe: clear the memory used by a password.
+//
+// The function takes the following parameters:
+//
+//    - password to clear.
+//
 func PasswordWipe(password string) {
 	var _arg1 *C.gchar // out
 
@@ -601,4 +797,5 @@ func PasswordWipe(password string) {
 	}
 
 	C.secret_password_wipe(_arg1)
+	runtime.KeepAlive(password)
 }
