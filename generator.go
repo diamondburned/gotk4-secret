@@ -30,8 +30,8 @@ func init() {
 		log.Fatalln("Missing -o output directory.")
 	}
 
-	if !verbose {
-		verbose = os.Getenv("GIR_VERBOSE") == "1"
+	if verbose {
+		girgen.DefaultOpts.LogLevel = logger.Debug
 	}
 }
 
@@ -57,10 +57,6 @@ func main() {
 	gen.AddFilters(gendata.Filters)
 	gen.AddFilters(filters)
 	gen.ApplyPreprocessors(gendata.Preprocessors)
-
-	if verbose {
-		gen.LogLevel = logger.Debug
-	}
 
 	if err := genutil.CleanDirectory(output, pkgExceptions); err != nil {
 		log.Fatalln("failed to clean output directory:", err)
