@@ -132,8 +132,8 @@ func (i ItemFlags) Has(other ItemFlags) bool {
 type Item struct {
 	gio.DBusProxy
 
-	Retrievable
 	*externglib.Object
+	Retrievable
 }
 
 var (
@@ -154,10 +154,10 @@ func wrapItem(obj *externglib.Object) *Item {
 				Object: obj,
 			},
 		},
+		Object: obj,
 		Retrievable: Retrievable{
 			Object: obj,
 		},
-		Object: obj,
 	}
 }
 
