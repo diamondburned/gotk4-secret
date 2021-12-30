@@ -15,8 +15,6 @@ import (
 	"github.com/diamondburned/gotk4/pkg/gio/v2"
 )
 
-// #cgo pkg-config: libsecret-1
-// #cgo CFLAGS: -Wno-deprecated-declarations
 // #include <stdlib.h>
 // #include <glib-object.h>
 // #include <libsecret/secret.h>
@@ -40,15 +38,32 @@ type RetrievableOverrider interface {
 	// some other secret binary value.
 	//
 	// This function returns immediately and completes asynchronously.
+	//
+	// The function takes the following parameters:
+	//
+	//    - ctx (optional): optional cancellation object.
+	//    - callback (optional): called when the operation completes.
+	//
 	RetrieveSecret(ctx context.Context, callback gio.AsyncReadyCallback)
 	// RetrieveSecretFinish: complete asynchronous operation to retrieve the
 	// secret value of this object.
+	//
+	// The function takes the following parameters:
+	//
+	//    - result asynchronous result passed to callback.
+	//
+	// The function returns the following values:
+	//
+	//    - value (optional): secret value which should be released with
+	//      secret_value_unref(), or NULL.
+	//
 	RetrieveSecretFinish(result gio.AsyncResulter) (*Value, error)
 }
 
 // Retrievable: object representing a read-only view of a secret item in the
 // Secret Service.
 type Retrievable struct {
+	_ [0]func() // equal guard
 	*externglib.Object
 }
 
@@ -97,6 +112,12 @@ func marshalRetrievabler(p uintptr) (interface{}, error) {
 // by the secret service.
 //
 // Do not modify the attribute returned by this method.
+//
+// The function returns the following values:
+//
+//    - hashTable: new reference to the attributes, which should not be modified,
+//      and released with g_hash_table_unref().
+//
 func (self *Retrievable) Attributes() map[string]string {
 	var _arg0 *C.SecretRetrievable // out
 	var _cret *C.GHashTable        // in
@@ -126,6 +147,11 @@ func (self *Retrievable) Attributes() map[string]string {
 
 // Created: get the created date and time of the object. The return value is the
 // number of seconds since the unix epoch, January 1st 1970.
+//
+// The function returns the following values:
+//
+//    - guint64: created date and time.
+//
 func (self *Retrievable) Created() uint64 {
 	var _arg0 *C.SecretRetrievable // out
 	var _cret C.guint64            // in
@@ -143,6 +169,11 @@ func (self *Retrievable) Created() uint64 {
 }
 
 // Label: get the label of this item.
+//
+// The function returns the following values:
+//
+//    - utf8: label, which should be freed with g_free().
+//
 func (self *Retrievable) Label() string {
 	var _arg0 *C.SecretRetrievable // out
 	var _cret *C.gchar             // in
@@ -162,6 +193,11 @@ func (self *Retrievable) Label() string {
 
 // Modified: get the modified date and time of the object. The return value is
 // the number of seconds since the unix epoch, January 1st 1970.
+//
+// The function returns the following values:
+//
+//    - guint64: modified date and time.
+//
 func (self *Retrievable) Modified() uint64 {
 	var _arg0 *C.SecretRetrievable // out
 	var _cret C.guint64            // in
@@ -187,8 +223,8 @@ func (self *Retrievable) Modified() uint64 {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - callback: called when the operation completes.
+//    - ctx (optional): optional cancellation object.
+//    - callback (optional): called when the operation completes.
 //
 func (self *Retrievable) RetrieveSecret(ctx context.Context, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretRetrievable  // out
@@ -219,6 +255,11 @@ func (self *Retrievable) RetrieveSecret(ctx context.Context, callback gio.AsyncR
 // The function takes the following parameters:
 //
 //    - result asynchronous result passed to callback.
+//
+// The function returns the following values:
+//
+//    - value (optional): secret value which should be released with
+//      secret_value_unref(), or NULL.
 //
 func (self *Retrievable) RetrieveSecretFinish(result gio.AsyncResulter) (*Value, error) {
 	var _arg0 *C.SecretRetrievable // out
@@ -262,7 +303,12 @@ func (self *Retrievable) RetrieveSecretFinish(result gio.AsyncResulter) (*Value,
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
+//
+// The function returns the following values:
+//
+//    - value (optional): secret value which should be released with
+//      secret_value_unref(), or NULL.
 //
 func (self *Retrievable) RetrieveSecretSync(ctx context.Context) (*Value, error) {
 	var _arg0 *C.SecretRetrievable // out

@@ -2,8 +2,6 @@
 
 package secret
 
-// #cgo pkg-config: libsecret-1
-// #cgo CFLAGS: -Wno-deprecated-declarations
 // #include <stdlib.h>
 // #include <libsecret/secret.h>
 import "C"

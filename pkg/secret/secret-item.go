@@ -17,8 +17,6 @@ import (
 	"github.com/diamondburned/gotk4/pkg/gio/v2"
 )
 
-// #cgo pkg-config: libsecret-1
-// #cgo CFLAGS: -Wno-deprecated-declarations
 // #include <stdlib.h>
 // #include <glib-object.h>
 // #include <libsecret/secret.h>
@@ -130,6 +128,7 @@ func (i ItemFlags) Has(other ItemFlags) bool {
 
 // Item: proxy object representing a secret item in the Secret Service.
 type Item struct {
+	_ [0]func() // equal guard
 	gio.DBusProxy
 
 	*externglib.Object
@@ -173,8 +172,8 @@ func marshalItemmer(p uintptr) (interface{}, error) {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - callback: called when the operation completes.
+//    - ctx (optional): optional cancellation object.
+//    - callback (optional): called when the operation completes.
 //
 func (self *Item) Delete(ctx context.Context, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretItem         // out
@@ -234,7 +233,7 @@ func (self *Item) DeleteFinish(result gio.AsyncResulter) error {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //
 func (self *Item) DeleteSync(ctx context.Context) error {
 	var _arg0 *C.SecretItem   // out
@@ -269,6 +268,12 @@ func (self *Item) DeleteSync(ctx context.Context) error {
 //
 // Do not modify the attributes returned by this method. Use
 // secret_item_set_attributes() instead.
+//
+// The function returns the following values:
+//
+//    - hashTable: new reference to the attributes, which should not be modified,
+//      and released with g_hash_table_unref().
+//
 func (self *Item) Attributes() map[string]string {
 	var _arg0 *C.SecretItem // out
 	var _cret *C.GHashTable // in
@@ -298,6 +303,11 @@ func (self *Item) Attributes() map[string]string {
 
 // Created: get the created date and time of the item. The return value is the
 // number of seconds since the unix epoch, January 1st 1970.
+//
+// The function returns the following values:
+//
+//    - guint64: created date and time.
+//
 func (self *Item) Created() uint64 {
 	var _arg0 *C.SecretItem // out
 	var _cret C.guint64     // in
@@ -319,6 +329,11 @@ func (self *Item) Created() uint64 {
 //
 // Use secret_item_load_secret() to initialize further features and change the
 // flags.
+//
+// The function returns the following values:
+//
+//    - itemFlags flags for features initialized.
+//
 func (self *Item) Flags() ItemFlags {
 	var _arg0 *C.SecretItem     // out
 	var _cret C.SecretItemFlags // in
@@ -336,6 +351,11 @@ func (self *Item) Flags() ItemFlags {
 }
 
 // Label: get the label of this item.
+//
+// The function returns the following values:
+//
+//    - utf8: label, which should be freed with g_free().
+//
 func (self *Item) Label() string {
 	var _arg0 *C.SecretItem // out
 	var _cret *C.gchar      // in
@@ -357,6 +377,11 @@ func (self *Item) Label() string {
 //
 // Depending on the secret service an item may not be able to be locked
 // independently from the collection that it is in.
+//
+// The function returns the following values:
+//
+//    - ok: whether the item is locked or not.
+//
 func (self *Item) Locked() bool {
 	var _arg0 *C.SecretItem // out
 	var _cret C.gboolean    // in
@@ -377,6 +402,11 @@ func (self *Item) Locked() bool {
 
 // Modified: get the modified date and time of the item. The return value is the
 // number of seconds since the unix epoch, January 1st 1970.
+//
+// The function returns the following values:
+//
+//    - guint64: modified date and time.
+//
 func (self *Item) Modified() uint64 {
 	var _arg0 *C.SecretItem // out
 	var _cret C.guint64     // in
@@ -395,6 +425,11 @@ func (self *Item) Modified() uint64 {
 
 // SchemaName gets the name of the schema that this item was stored with. This
 // is also available at the <literal>xdg:schema</literal> attribute.
+//
+// The function returns the following values:
+//
+//    - utf8 (optional): schema name.
+//
 func (self *Item) SchemaName() string {
 	var _arg0 *C.SecretItem // out
 	var _cret *C.gchar      // in
@@ -418,6 +453,12 @@ func (self *Item) SchemaName() string {
 // secret has not yet been loaded then this will return NULL.
 //
 // To load the secret call the secret_item_load_secret() method.
+//
+// The function returns the following values:
+//
+//    - value (optional): secret value which should be released with
+//      secret_value_unref(), or NULL.
+//
 func (self *Item) Secret() *Value {
 	var _arg0 *C.SecretItem  // out
 	var _cret *C.SecretValue // in
@@ -443,6 +484,11 @@ func (self *Item) Secret() *Value {
 }
 
 // Service: get the Secret Service object that this item was created with.
+//
+// The function returns the following values:
+//
+//    - service: secret Service object.
+//
 func (self *Item) Service() *Service {
 	var _arg0 *C.SecretItem    // out
 	var _cret *C.SecretService // in
@@ -470,8 +516,8 @@ func (self *Item) Service() *Service {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - callback: called when the operation completes.
+//    - ctx (optional): optional cancellation object.
+//    - callback (optional): called when the operation completes.
 //
 func (self *Item) LoadSecret(ctx context.Context, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretItem         // out
@@ -537,7 +583,7 @@ func (self *Item) LoadSecretFinish(result gio.AsyncResulter) error {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //
 func (self *Item) LoadSecretSync(ctx context.Context) error {
 	var _arg0 *C.SecretItem   // out
@@ -588,10 +634,10 @@ func (self *Item) Refresh() {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - schema for the attributes.
+//    - ctx (optional): optional cancellation object.
+//    - schema (optional) for the attributes.
 //    - attributes: new set of attributes.
-//    - callback: called when the asynchronous operation completes.
+//    - callback (optional): called when the asynchronous operation completes.
 //
 func (self *Item) SetAttributes(ctx context.Context, schema *Schema, attributes map[string]string, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretItem         // out
@@ -672,8 +718,8 @@ func (self *Item) SetAttributesFinish(result gio.AsyncResulter) error {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - schema for the attributes.
+//    - ctx (optional): optional cancellation object.
+//    - schema (optional) for the attributes.
 //    - attributes: new set of attributes.
 //
 func (self *Item) SetAttributesSync(ctx context.Context, schema *Schema, attributes map[string]string) error {
@@ -725,9 +771,9 @@ func (self *Item) SetAttributesSync(ctx context.Context, schema *Schema, attribu
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //    - label: new label.
-//    - callback: called when the operation completes.
+//    - callback (optional): called when the operation completes.
 //
 func (self *Item) SetLabel(ctx context.Context, label string, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretItem         // out
@@ -791,7 +837,7 @@ func (self *Item) SetLabelFinish(result gio.AsyncResulter) error {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //    - label: new label.
 //
 func (self *Item) SetLabelSync(ctx context.Context, label string) error {
@@ -832,9 +878,9 @@ func (self *Item) SetLabelSync(ctx context.Context, label string) error {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //    - value: new secret value.
-//    - callback: called when the operation completes.
+//    - callback (optional): called when the operation completes.
 //
 func (self *Item) SetSecret(ctx context.Context, value *Value, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretItem         // out
@@ -900,7 +946,7 @@ func (self *Item) SetSecretFinish(result gio.AsyncResulter) error {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //    - value: new secret value.
 //
 func (self *Item) SetSecretSync(ctx context.Context, value *Value) error {
@@ -943,14 +989,14 @@ func (self *Item) SetSecretSync(ctx context.Context, value *Value) error {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //    - collection: secret collection to create this item in.
-//    - schema for the attributes.
+//    - schema (optional) for the attributes.
 //    - attributes for the new item.
 //    - label for the new item.
 //    - value: secret value for the new item.
 //    - flags for the creation of the new item.
-//    - callback: called when the operation completes.
+//    - callback (optional): called when the operation completes.
 //
 func ItemCreate(ctx context.Context, collection *Collection, schema *Schema, attributes map[string]string, label string, value *Value, flags ItemCreateFlags, callback gio.AsyncReadyCallback) {
 	var _arg7 *C.GCancellable         // out
@@ -1010,6 +1056,10 @@ func ItemCreate(ctx context.Context, collection *Collection, schema *Schema, att
 //
 //    - result asynchronous result passed to the callback.
 //
+// The function returns the following values:
+//
+//    - item: new item, which should be unreferenced with g_object_unref().
+//
 func ItemCreateFinish(result gio.AsyncResulter) (*Item, error) {
 	var _arg1 *C.GAsyncResult // out
 	var _cret *C.SecretItem   // in
@@ -1043,13 +1093,17 @@ func ItemCreateFinish(result gio.AsyncResulter) (*Item, error) {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //    - collection: secret collection to create this item in.
-//    - schema for the attributes.
+//    - schema (optional) for the attributes.
 //    - attributes for the new item.
 //    - label for the new item.
 //    - value: secret value for the new item.
 //    - flags for the creation of the new item.
+//
+// The function returns the following values:
+//
+//    - item: new item, which should be unreferenced with g_object_unref().
 //
 func ItemCreateSync(ctx context.Context, collection *Collection, schema *Schema, attributes map[string]string, label string, value *Value, flags ItemCreateFlags) (*Item, error) {
 	var _arg7 *C.GCancellable         // out
@@ -1116,9 +1170,9 @@ func ItemCreateSync(ctx context.Context, collection *Collection, schema *Schema,
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //    - items to retrieve secrets for.
-//    - callback: called when the operation completes.
+//    - callback (optional): called when the operation completes.
 //
 func ItemLoadSecrets(ctx context.Context, items []Item, callback gio.AsyncReadyCallback) {
 	var _arg2 *C.GCancellable       // out
@@ -1188,7 +1242,7 @@ func ItemLoadSecretsFinish(result gio.AsyncResulter) error {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //    - items to retrieve secrets for.
 //
 func ItemLoadSecretsSync(ctx context.Context, items []Item) error {

@@ -15,8 +15,6 @@ import (
 	"github.com/diamondburned/gotk4/pkg/gio/v2"
 )
 
-// #cgo pkg-config: libsecret-1
-// #cgo CFLAGS: -Wno-deprecated-declarations
 // #include <stdlib.h>
 // #include <libsecret/secret.h>
 // void _gotk4_gio2_AsyncReadyCallback(GObject*, GAsyncResult*, gpointer);
@@ -57,10 +55,10 @@ func PasswordClearFinish(result gio.AsyncResulter) error {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - schema for the attributes.
+//    - ctx (optional): optional cancellation object.
+//    - schema (optional) for the attributes.
 //    - attributes: attribute keys and values.
-//    - callback: called when the operation completes.
+//    - callback (optional): called when the operation completes.
 //
 func PasswordClear(ctx context.Context, schema *Schema, attributes map[string]string, callback gio.AsyncReadyCallback) {
 	var _arg3 *C.GCancellable       // out
@@ -109,8 +107,8 @@ func PasswordClear(ctx context.Context, schema *Schema, attributes map[string]st
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - schema for the attributes.
+//    - ctx (optional): optional cancellation object.
+//    - schema (optional) for the attributes.
 //    - attributes: attribute keys and values.
 //
 func PasswordClearSync(ctx context.Context, schema *Schema, attributes map[string]string) error {
@@ -160,6 +158,11 @@ func PasswordClearSync(ctx context.Context, schema *Schema, attributes map[strin
 //
 //    - result asynchronous result passed to the callback.
 //
+// The function returns the following values:
+//
+//    - utf8: new password string which should be freed with
+//      secret_password_free() or may be freed with g_free() when done.
+//
 func PasswordLookupFinish(result gio.AsyncResulter) (string, error) {
 	var _arg1 *C.GAsyncResult // out
 	var _cret *C.gchar        // in
@@ -192,10 +195,10 @@ func PasswordLookupFinish(result gio.AsyncResulter) (string, error) {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - schema for attributes.
+//    - ctx (optional): optional cancellation object.
+//    - schema (optional) for attributes.
 //    - attributes: attribute keys and values.
-//    - callback: called when the operation completes.
+//    - callback (optional): called when the operation completes.
 //
 func PasswordLookup(ctx context.Context, schema *Schema, attributes map[string]string, callback gio.AsyncReadyCallback) {
 	var _arg3 *C.GCancellable       // out
@@ -243,9 +246,14 @@ func PasswordLookup(ctx context.Context, schema *Schema, attributes map[string]s
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - schema for attributes.
+//    - ctx (optional): optional cancellation object.
+//    - schema (optional) for attributes.
 //    - attributes: attribute keys and values.
+//
+// The function returns the following values:
+//
+//    - utf8: new password string which should be freed with
+//      secret_password_free() or may be freed with g_free() when done.
 //
 func PasswordLookupSync(ctx context.Context, schema *Schema, attributes map[string]string) (string, error) {
 	var _arg3 *C.GCancellable // out
@@ -298,6 +306,10 @@ func PasswordLookupSync(ctx context.Context, schema *Schema, attributes map[stri
 //
 //    - result asynchronous result passed to the callback.
 //
+// The function returns the following values:
+//
+//    - list of Retrievable containing attributes of the matched items.
+//
 func PasswordSearchFinish(result gio.AsyncResulter) ([]Retrievabler, error) {
 	var _arg1 *C.GAsyncResult // out
 	var _cret *C.GList        // in
@@ -322,9 +334,13 @@ func PasswordSearchFinish(result gio.AsyncResulter) ([]Retrievabler, error) {
 			}
 
 			object := externglib.AssumeOwnership(objptr)
-			rv, ok := (externglib.CastObject(object)).(Retrievabler)
+			casted := object.WalkCast(func(obj externglib.Objector) bool {
+				_, ok := obj.(Retrievabler)
+				return ok
+			})
+			rv, ok := casted.(Retrievabler)
 			if !ok {
-				panic("object of type " + object.TypeFromInstance().String() + " is not secret.Retrievabler")
+				panic("no marshaler for " + object.TypeFromInstance().String() + " matching secret.Retrievabler")
 			}
 			dst = rv
 		}
@@ -345,11 +361,11 @@ func PasswordSearchFinish(result gio.AsyncResulter) ([]Retrievabler, error) {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - schema for attributes.
+//    - ctx (optional): optional cancellation object.
+//    - schema (optional) for attributes.
 //    - attributes: attribute keys and values.
 //    - flags: search option flags.
-//    - callback: called when the operation completes.
+//    - callback (optional): called when the operation completes.
 //
 func PasswordSearch(ctx context.Context, schema *Schema, attributes map[string]string, flags SearchFlags, callback gio.AsyncReadyCallback) {
 	var _arg4 *C.GCancellable       // out
@@ -400,10 +416,14 @@ func PasswordSearch(ctx context.Context, schema *Schema, attributes map[string]s
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - schema for attributes.
+//    - ctx (optional): optional cancellation object.
+//    - schema (optional) for attributes.
 //    - attributes: attribute keys and values.
 //    - flags: search option flags.
+//
+// The function returns the following values:
+//
+//    - list of Retrievable containing attributes of the matched items.
 //
 func PasswordSearchSync(ctx context.Context, schema *Schema, attributes map[string]string, flags SearchFlags) ([]Retrievabler, error) {
 	var _arg4 *C.GCancellable     // out
@@ -454,9 +474,13 @@ func PasswordSearchSync(ctx context.Context, schema *Schema, attributes map[stri
 			}
 
 			object := externglib.AssumeOwnership(objptr)
-			rv, ok := (externglib.CastObject(object)).(Retrievabler)
+			casted := object.WalkCast(func(obj externglib.Objector) bool {
+				_, ok := obj.(Retrievabler)
+				return ok
+			})
+			rv, ok := casted.(Retrievabler)
 			if !ok {
-				panic("object of type " + object.TypeFromInstance().String() + " is not secret.Retrievabler")
+				panic("no marshaler for " + object.TypeFromInstance().String() + " matching secret.Retrievabler")
 			}
 			dst = rv
 		}
@@ -509,14 +533,14 @@ func PasswordStoreFinish(result gio.AsyncResulter) error {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - schema for attributes.
+//    - ctx (optional): optional cancellation object.
+//    - schema (optional) for attributes.
 //    - attributes: attribute keys and values.
-//    - collection alias, or D-Bus object path of the collection where to store
-//    the secret.
+//    - collection (optional) alias, or D-Bus object path of the collection where
+//      to store the secret.
 //    - label for the secret.
 //    - password: null-terminated password to store.
-//    - callback: called when the operation completes.
+//    - callback (optional): called when the operation completes.
 //
 func PasswordStore(ctx context.Context, schema *Schema, attributes map[string]string, collection, label, password string, callback gio.AsyncReadyCallback) {
 	var _arg6 *C.GCancellable       // out
@@ -576,14 +600,14 @@ func PasswordStore(ctx context.Context, schema *Schema, attributes map[string]st
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - schema for attributes.
+//    - ctx (optional): optional cancellation object.
+//    - schema (optional) for attributes.
 //    - attributes: attribute keys and values.
-//    - collection alias, or D-Bus object path of the collection where to store
-//    the secret.
+//    - collection (optional) alias, or D-Bus object path of the collection where
+//      to store the secret.
 //    - label for the secret.
 //    - value: Value.
-//    - callback: called when the operation completes.
+//    - callback (optional): called when the operation completes.
 //
 func PasswordStoreBinary(ctx context.Context, schema *Schema, attributes map[string]string, collection, label string, value *Value, callback gio.AsyncReadyCallback) {
 	var _arg6 *C.GCancellable       // out
@@ -643,11 +667,11 @@ func PasswordStoreBinary(ctx context.Context, schema *Schema, attributes map[str
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - schema for attributes.
+//    - ctx (optional): optional cancellation object.
+//    - schema (optional) for attributes.
 //    - attributes: attribute keys and values.
-//    - collection alias, or D-Bus object path of the collection where to store
-//    the secret.
+//    - collection (optional) alias, or D-Bus object path of the collection where
+//      to store the secret.
 //    - label for the secret.
 //    - value: Value.
 //
@@ -720,11 +744,11 @@ func PasswordStoreBinarySync(ctx context.Context, schema *Schema, attributes map
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - schema for attributes.
+//    - ctx (optional): optional cancellation object.
+//    - schema (optional) for attributes.
 //    - attributes: attribute keys and values.
-//    - collection alias, or D-Bus object path of the collection where to store
-//    the secret.
+//    - collection (optional) alias, or D-Bus object path of the collection where
+//      to store the secret.
 //    - label for the secret.
 //    - password: null-terminated password to store.
 //
@@ -786,7 +810,7 @@ func PasswordStoreSync(ctx context.Context, schema *Schema, attributes map[strin
 //
 // The function takes the following parameters:
 //
-//    - password to clear.
+//    - password (optional) to clear.
 //
 func PasswordWipe(password string) {
 	var _arg1 *C.gchar // out

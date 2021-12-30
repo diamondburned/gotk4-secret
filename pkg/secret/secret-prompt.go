@@ -16,8 +16,6 @@ import (
 	"github.com/diamondburned/gotk4/pkg/glib/v2"
 )
 
-// #cgo pkg-config: libsecret-1
-// #cgo CFLAGS: -Wno-deprecated-declarations
 // #include <stdlib.h>
 // #include <glib-object.h>
 // #include <libsecret/secret.h>
@@ -33,6 +31,7 @@ func init() {
 // Prompt: proxy object representing a prompt that the Secret Service will
 // display to the user.
 type Prompt struct {
+	_ [0]func() // equal guard
 	gio.DBusProxy
 }
 
@@ -74,11 +73,11 @@ func marshalPrompter(p uintptr) (interface{}, error) {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - windowId: string form of XWindow id for parent window to be transient
-//    for.
+//    - ctx (optional): optional cancellation object.
+//    - windowId (optional): string form of XWindow id for parent window to be
+//      transient for.
 //    - returnType: variant type of the prompt result.
-//    - callback: called when the operation completes.
+//    - callback (optional): called when the operation completes.
 //
 func (self *Prompt) Perform(ctx context.Context, windowId string, returnType *glib.VariantType, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretPrompt       // out
@@ -122,6 +121,11 @@ func (self *Prompt) Perform(ctx context.Context, windowId string, returnType *gl
 // The function takes the following parameters:
 //
 //    - result asynchronous result passed to the callback.
+//
+// The function returns the following values:
+//
+//    - variant: NULL if the prompt was dismissed or an error occurred, a variant
+//      result if the prompt was successful.
 //
 func (self *Prompt) PerformFinish(result gio.AsyncResulter) (*glib.Variant, error) {
 	var _arg0 *C.SecretPrompt // out
@@ -169,10 +173,14 @@ func (self *Prompt) PerformFinish(result gio.AsyncResulter) (*glib.Variant, erro
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - windowId: string form of XWindow id for parent window to be transient
-//    for.
+//    - ctx (optional): optional cancellation object.
+//    - windowId (optional): string form of XWindow id for parent window to be
+//      transient for.
 //    - returnType: variant type of the prompt result.
+//
+// The function returns the following values:
+//
+//    - variant: NULL if the prompt was dismissed or an error occurred.
 //
 func (self *Prompt) PerformSync(ctx context.Context, windowId string, returnType *glib.VariantType) (*glib.Variant, error) {
 	var _arg0 *C.SecretPrompt // out
@@ -235,10 +243,14 @@ func (self *Prompt) PerformSync(ctx context.Context, windowId string, returnType
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - windowId: string form of XWindow id for parent window to be transient
-//    for.
+//    - ctx (optional): optional cancellation object.
+//    - windowId (optional): string form of XWindow id for parent window to be
+//      transient for.
 //    - returnType: variant type of the prompt result.
+//
+// The function returns the following values:
+//
+//    - variant: NULL if the prompt was dismissed or an error occurred.
 //
 func (self *Prompt) Run(ctx context.Context, windowId string, returnType *glib.VariantType) (*glib.Variant, error) {
 	var _arg0 *C.SecretPrompt // out

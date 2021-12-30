@@ -6,8 +6,6 @@ import (
 	"github.com/diamondburned/gotk4/pkg/glib/v2"
 )
 
-// #cgo pkg-config: libsecret-1
-// #cgo CFLAGS: -Wno-deprecated-declarations
 // #include <stdlib.h>
 // #include <libsecret/secret.h>
 import "C"
@@ -21,6 +19,8 @@ const COLLECTION_DEFAULT = "default"
 // secret_password_store(), secret_collection_for_alias() or similar functions.
 const COLLECTION_SESSION = "session"
 
+// The function returns the following values:
+//
 func ErrorGetQuark() glib.Quark {
 	var _cret C.GQuark // in
 

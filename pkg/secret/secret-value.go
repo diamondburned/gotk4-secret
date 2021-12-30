@@ -10,8 +10,6 @@ import (
 	externglib "github.com/diamondburned/gotk4/pkg/core/glib"
 )
 
-// #cgo pkg-config: libsecret-1
-// #cgo CFLAGS: -Wno-deprecated-declarations
 // #include <stdlib.h>
 // #include <glib-object.h>
 // #include <libsecret/secret.h>
@@ -74,6 +72,11 @@ func NewValue(secret string, length int, contentType string) *Value {
 // Get the secret data in the Value. The value is not necessarily
 // null-terminated unless it was created with secret_value_new() or a
 // null-terminated string was passed to secret_value_new_full().
+//
+// The function returns the following values:
+//
+//    - guint8s: secret data.
+//
 func (value *Value) Get() []byte {
 	var _arg0 *C.SecretValue // out
 	var _cret *C.gchar       // in
@@ -94,6 +97,11 @@ func (value *Value) Get() []byte {
 
 // ContentType: get the content type of the secret value, such as
 // <literal>text/plain</literal>.
+//
+// The function returns the following values:
+//
+//    - utf8: content type.
+//
 func (value *Value) ContentType() string {
 	var _arg0 *C.SecretValue // out
 	var _cret *C.gchar       // in
@@ -112,6 +120,11 @@ func (value *Value) ContentType() string {
 
 // Text: get the secret data in the Value if it contains a textual value. The
 // content type must be <literal>text/plain</literal>.
+//
+// The function returns the following values:
+//
+//    - utf8 (optional): content type.
+//
 func (value *Value) Text() string {
 	var _arg0 *C.SecretValue // out
 	var _cret *C.gchar       // in
@@ -132,6 +145,16 @@ func (value *Value) Text() string {
 
 // UnrefToPassword: unreference a Value and steal the secret data in Value as
 // nonpageable memory.
+//
+// The function takes the following parameters:
+//
+//    - length of the secret.
+//
+// The function returns the following values:
+//
+//    - utf8: new password string stored in nonpageable memory which must be
+//      freed with secret_password_free() when done.
+//
 func (value *Value) UnrefToPassword(length *uint) string {
 	var _arg0 *C.SecretValue // out
 	var _arg1 *C.gsize       // out

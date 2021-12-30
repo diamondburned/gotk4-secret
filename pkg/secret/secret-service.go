@@ -18,8 +18,6 @@ import (
 	"github.com/diamondburned/gotk4/pkg/glib/v2"
 )
 
-// #cgo pkg-config: libsecret-1
-// #cgo CFLAGS: -Wno-deprecated-declarations
 // #include <stdlib.h>
 // #include <glib-object.h>
 // #include <libsecret/secret.h>
@@ -93,10 +91,27 @@ func (s ServiceFlags) Has(other ServiceFlags) bool {
 type ServiceOverrider interface {
 	// CollectionGType: get the GObject type for collections instantiated by
 	// this service. This will always be either Collection or derived from it.
+	//
+	// The function returns the following values:
+	//
+	//    - gType: gobject type for collections.
+	//
 	CollectionGType() externglib.Type
 	// ItemGType: get the GObject type for items instantiated by this service.
 	// This will always be either Item or derived from it.
+	//
+	// The function returns the following values:
+	//
+	//    - gType: gobject type for items.
+	//
 	ItemGType() externglib.Type
+	// The function takes the following parameters:
+	//
+	//    - ctx (optional)
+	//    - prompt
+	//    - returnType
+	//    - callback (optional)
+	//
 	PromptAsync(ctx context.Context, prompt *Prompt, returnType *glib.VariantType, callback gio.AsyncReadyCallback)
 	// PromptFinish: complete asynchronous operation to perform prompting for a
 	// Prompt.
@@ -104,6 +119,16 @@ type ServiceOverrider interface {
 	// Returns a variant result if the prompt was completed and not dismissed.
 	// The type of result depends on the action the prompt is completing, and is
 	// defined in the Secret Service DBus API specification.
+	//
+	// The function takes the following parameters:
+	//
+	//    - result asynchronous result passed to the callback.
+	//
+	// The function returns the following values:
+	//
+	//    - variant: NULL if the prompt was dismissed or an error occurred, a
+	//      variant result if the prompt was successful.
+	//
 	PromptFinish(result gio.AsyncResulter) (*glib.Variant, error)
 	// PromptSync: perform prompting for a Prompt.
 	//
@@ -119,11 +144,24 @@ type ServiceOverrider interface {
 	// to change the behavior of the prompting. The default behavior is to
 	// simply run secret_prompt_perform_sync() on the prompt with a NULL
 	// <literal>window_id</literal>.
+	//
+	// The function takes the following parameters:
+	//
+	//    - ctx (optional): optional cancellation object.
+	//    - prompt: prompt.
+	//    - returnType: variant type of the prompt result.
+	//
+	// The function returns the following values:
+	//
+	//    - variant: NULL if the prompt was dismissed or an error occurred, a
+	//      variant result if the prompt was successful.
+	//
 	PromptSync(ctx context.Context, prompt *Prompt, returnType *glib.VariantType) (*glib.Variant, error)
 }
 
 // Service: proxy object representing the Secret Service.
 type Service struct {
+	_ [0]func() // equal guard
 	gio.DBusProxy
 }
 
@@ -164,10 +202,10 @@ func marshalServicer(p uintptr) (interface{}, error) {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - schema for the attributes.
+//    - ctx (optional): optional cancellation object.
+//    - schema (optional) for the attributes.
 //    - attributes: attribute keys and values.
-//    - callback: called when the operation completes.
+//    - callback (optional): called when the operation completes.
 //
 func (service *Service) Clear(ctx context.Context, schema *Schema, attributes map[string]string, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretService      // out
@@ -255,8 +293,8 @@ func (service *Service) ClearFinish(result gio.AsyncResulter) error {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - schema for the attributes.
+//    - ctx (optional): optional cancellation object.
+//    - schema (optional) for the attributes.
 //    - attributes: attribute keys and values.
 //
 func (service *Service) ClearSync(ctx context.Context, schema *Schema, attributes map[string]string) error {
@@ -316,8 +354,8 @@ func (service *Service) ClearSync(ctx context.Context, schema *Schema, attribute
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - callback: called when the operation completes.
+//    - ctx (optional): optional cancellation object.
+//    - callback (optional): called when the operation completes.
 //
 func (self *Service) EnsureSession(ctx context.Context, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretService      // out
@@ -383,7 +421,7 @@ func (self *Service) EnsureSessionFinish(result gio.AsyncResulter) error {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //
 func (self *Service) EnsureSessionSync(ctx context.Context) error {
 	var _arg0 *C.SecretService // out
@@ -412,6 +450,11 @@ func (self *Service) EnsureSessionSync(ctx context.Context) error {
 
 // CollectionGType: get the GObject type for collections instantiated by this
 // service. This will always be either Collection or derived from it.
+//
+// The function returns the following values:
+//
+//    - gType: gobject type for collections.
+//
 func (self *Service) CollectionGType() externglib.Type {
 	var _arg0 *C.SecretService // out
 	var _cret C.GType          // in
@@ -434,6 +477,11 @@ func (self *Service) CollectionGType() externglib.Type {
 // If the SECRET_SERVICE_LOAD_COLLECTIONS flag was not specified when
 // initializing Service proxy object, then this method will return NULL. Use
 // secret_service_load_collections() to load the collections.
+//
+// The function returns the following values:
+//
+//    - list (optional): a list of the collections in the secret service.
+//
 func (self *Service) Collections() []Collection {
 	var _arg0 *C.SecretService // out
 	var _cret *C.GList         // in
@@ -463,6 +511,11 @@ func (self *Service) Collections() []Collection {
 //
 // Use secret_service_ensure_session() or secret_service_load_collections() to
 // initialize further features and change the flags.
+//
+// The function returns the following values:
+//
+//    - serviceFlags flags for features initialized.
+//
 func (self *Service) Flags() ServiceFlags {
 	var _arg0 *C.SecretService     // out
 	var _cret C.SecretServiceFlags // in
@@ -481,6 +534,11 @@ func (self *Service) Flags() ServiceFlags {
 
 // ItemGType: get the GObject type for items instantiated by this service. This
 // will always be either Item or derived from it.
+//
+// The function returns the following values:
+//
+//    - gType: gobject type for items.
+//
 func (self *Service) ItemGType() externglib.Type {
 	var _arg0 *C.SecretService // out
 	var _cret C.GType          // in
@@ -502,6 +560,12 @@ func (self *Service) ItemGType() externglib.Type {
 //
 // This will be NULL if no session has been established. Use
 // secret_service_ensure_session() to establish a session.
+//
+// The function returns the following values:
+//
+//    - utf8 (optional): string representing the algorithms for transferring
+//      secrets.
+//
 func (self *Service) SessionAlgorithms() string {
 	var _arg0 *C.SecretService // out
 	var _cret *C.gchar         // in
@@ -532,8 +596,8 @@ func (self *Service) SessionAlgorithms() string {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - callback: called when the operation completes.
+//    - ctx (optional): optional cancellation object.
+//    - callback (optional): called when the operation completes.
 //
 func (self *Service) LoadCollections(ctx context.Context, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretService      // out
@@ -599,7 +663,7 @@ func (self *Service) LoadCollectionsFinish(result gio.AsyncResulter) error {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //
 func (self *Service) LoadCollectionsSync(ctx context.Context) error {
 	var _arg0 *C.SecretService // out
@@ -640,9 +704,9 @@ func (self *Service) LoadCollectionsSync(ctx context.Context) error {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //    - objects items or collections to lock.
-//    - callback: called when the operation completes.
+//    - callback (optional): called when the operation completes.
 //
 func (service *Service) Lock(ctx context.Context, objects []gio.DBusProxy, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretService      // out
@@ -687,6 +751,12 @@ func (service *Service) Lock(ctx context.Context, objects []gio.DBusProxy, callb
 // The function takes the following parameters:
 //
 //    - result asynchronous result passed to the callback.
+//
+// The function returns the following values:
+//
+//    - locked (optional): location to place list of items or collections that
+//      were locked.
+//    - gint: number of items or collections that were locked.
 //
 func (service *Service) LockFinish(result gio.AsyncResulter) ([]gio.DBusProxy, int, error) {
 	var _arg0 *C.SecretService // out
@@ -753,8 +823,14 @@ func (service *Service) LockFinish(result gio.AsyncResulter) ([]gio.DBusProxy, i
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //    - objects items or collections to lock.
+//
+// The function returns the following values:
+//
+//    - locked (optional): location to place list of items or collections that
+//      were locked.
+//    - gint: number of items or collections that were locked.
 //
 func (service *Service) LockSync(ctx context.Context, objects []gio.DBusProxy) ([]gio.DBusProxy, int, error) {
 	var _arg0 *C.SecretService // out
@@ -831,10 +907,10 @@ func (service *Service) LockSync(ctx context.Context, objects []gio.DBusProxy) (
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - schema for the attributes.
+//    - ctx (optional): optional cancellation object.
+//    - schema (optional) for the attributes.
 //    - attributes: attribute keys and values.
-//    - callback: called when the operation completes.
+//    - callback (optional): called when the operation completes.
 //
 func (service *Service) Lookup(ctx context.Context, schema *Schema, attributes map[string]string, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretService      // out
@@ -888,6 +964,11 @@ func (service *Service) Lookup(ctx context.Context, schema *Schema, attributes m
 //
 //    - result asynchronous result passed to the callback.
 //
+// The function returns the following values:
+//
+//    - value: newly allocated Value, which should be released with
+//      secret_value_unref(), or NULL if no secret found.
+//
 func (service *Service) LookupFinish(result gio.AsyncResulter) (*Value, error) {
 	var _arg0 *C.SecretService // out
 	var _arg1 *C.GAsyncResult  // out
@@ -932,9 +1013,14 @@ func (service *Service) LookupFinish(result gio.AsyncResulter) (*Value, error) {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - schema for the attributes.
+//    - ctx (optional): optional cancellation object.
+//    - schema (optional) for the attributes.
 //    - attributes: attribute keys and values.
+//
+// The function returns the following values:
+//
+//    - value: newly allocated Value, which should be released with
+//      secret_value_unref(), or NULL if no secret found.
 //
 func (service *Service) LookupSync(ctx context.Context, schema *Schema, attributes map[string]string) (*Value, error) {
 	var _arg0 *C.SecretService // out
@@ -1001,10 +1087,10 @@ func (service *Service) LookupSync(ctx context.Context, schema *Schema, attribut
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //    - prompt: prompt.
-//    - returnType: variant type of the prompt result.
-//    - callback: called when the operation completes.
+//    - returnType (optional): variant type of the prompt result.
+//    - callback (optional): called when the operation completes.
 //
 func (self *Service) Prompt(ctx context.Context, prompt *Prompt, returnType *glib.VariantType, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretService      // out
@@ -1047,6 +1133,11 @@ func (self *Service) Prompt(ctx context.Context, prompt *Prompt, returnType *gli
 // The function takes the following parameters:
 //
 //    - result asynchronous result passed to the callback.
+//
+// The function returns the following values:
+//
+//    - variant: NULL if the prompt was dismissed or an error occurred, a variant
+//      result if the prompt was successful.
 //
 func (self *Service) PromptFinish(result gio.AsyncResulter) (*glib.Variant, error) {
 	var _arg0 *C.SecretService // out
@@ -1095,9 +1186,14 @@ func (self *Service) PromptFinish(result gio.AsyncResulter) (*glib.Variant, erro
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //    - prompt: prompt.
 //    - returnType: variant type of the prompt result.
+//
+// The function returns the following values:
+//
+//    - variant: NULL if the prompt was dismissed or an error occurred, a variant
+//      result if the prompt was successful.
 //
 func (self *Service) PromptSync(ctx context.Context, prompt *Prompt, returnType *glib.VariantType) (*glib.Variant, error) {
 	var _arg0 *C.SecretService // out
@@ -1160,11 +1256,11 @@ func (self *Service) PromptSync(ctx context.Context, prompt *Prompt, returnType 
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - schema for the attributes.
+//    - ctx (optional): optional cancellation object.
+//    - schema (optional) for the attributes.
 //    - attributes: search for items matching these attributes.
 //    - flags: search option flags.
-//    - callback: called when the operation completes.
+//    - callback (optional): called when the operation completes.
 //
 func (service *Service) Search(ctx context.Context, schema *Schema, attributes map[string]string, flags SearchFlags, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretService      // out
@@ -1217,6 +1313,10 @@ func (service *Service) Search(ctx context.Context, schema *Schema, attributes m
 // The function takes the following parameters:
 //
 //    - result asynchronous result passed to callback.
+//
+// The function returns the following values:
+//
+//    - list: a list of items that matched the search.
 //
 func (service *Service) SearchFinish(result gio.AsyncResulter) ([]Item, error) {
 	var _arg0 *C.SecretService // out
@@ -1274,10 +1374,14 @@ func (service *Service) SearchFinish(result gio.AsyncResulter) ([]Item, error) {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - schema for the attributes.
+//    - ctx (optional): optional cancellation object.
+//    - schema (optional) for the attributes.
 //    - attributes: search for items matching these attributes.
 //    - flags: search option flags.
+//
+// The function returns the following values:
+//
+//    - list: a list of items that matched the search.
 //
 func (service *Service) SearchSync(ctx context.Context, schema *Schema, attributes map[string]string, flags SearchFlags) ([]Item, error) {
 	var _arg0 *C.SecretService    // out
@@ -1346,10 +1450,10 @@ func (service *Service) SearchSync(ctx context.Context, schema *Schema, attribut
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //    - alias to assign the collection to.
-//    - collection to assign to the alias.
-//    - callback: called when the operation completes.
+//    - collection (optional) to assign to the alias.
+//    - callback (optional): called when the operation completes.
 //
 func (service *Service) SetAlias(ctx context.Context, alias string, collection *Collection, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretService      // out
@@ -1425,9 +1529,9 @@ func (service *Service) SetAliasFinish(result gio.AsyncResulter) error {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //    - alias to assign the collection to.
-//    - collection to assign to the alias.
+//    - collection (optional) to assign to the alias.
 //
 func (service *Service) SetAliasSync(ctx context.Context, alias string, collection *Collection) error {
 	var _arg0 *C.SecretService    // out
@@ -1483,14 +1587,14 @@ func (service *Service) SetAliasSync(ctx context.Context, alias string, collecti
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - schema to use to check attributes.
+//    - ctx (optional): optional cancellation object.
+//    - schema (optional) to use to check attributes.
 //    - attributes: attribute keys and values.
-//    - collection alias, or D-Bus object path of the collection where to store
-//    the secret.
+//    - collection (optional) alias, or D-Bus object path of the collection where
+//      to store the secret.
 //    - label for the secret.
 //    - value: secret value.
-//    - callback: called when the operation completes.
+//    - callback (optional): called when the operation completes.
 //
 func (service *Service) Store(ctx context.Context, schema *Schema, attributes map[string]string, collection, label string, value *Value, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretService      // out
@@ -1597,11 +1701,11 @@ func (service *Service) StoreFinish(result gio.AsyncResulter) error {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - schema for the attributes.
+//    - ctx (optional): optional cancellation object.
+//    - schema (optional) for the attributes.
 //    - attributes: attribute keys and values.
-//    - collection alias, or D-Bus object path of the collection where to store
-//    the secret.
+//    - collection (optional) alias, or D-Bus object path of the collection where
+//      to store the secret.
 //    - label for the secret.
 //    - value: secret value.
 //
@@ -1677,9 +1781,9 @@ func (service *Service) StoreSync(ctx context.Context, schema *Schema, attribute
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //    - objects items or collections to unlock.
-//    - callback: called when the operation completes.
+//    - callback (optional): called when the operation completes.
 //
 func (service *Service) Unlock(ctx context.Context, objects []gio.DBusProxy, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretService      // out
@@ -1724,6 +1828,12 @@ func (service *Service) Unlock(ctx context.Context, objects []gio.DBusProxy, cal
 // The function takes the following parameters:
 //
 //    - result asynchronous result passed to the callback.
+//
+// The function returns the following values:
+//
+//    - unlocked (optional): location to place list of items or collections that
+//      were unlocked.
+//    - gint: number of items or collections that were unlocked.
 //
 func (service *Service) UnlockFinish(result gio.AsyncResulter) ([]gio.DBusProxy, int, error) {
 	var _arg0 *C.SecretService // out
@@ -1790,8 +1900,14 @@ func (service *Service) UnlockFinish(result gio.AsyncResulter) ([]gio.DBusProxy,
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //    - objects items or collections to unlock.
+//
+// The function returns the following values:
+//
+//    - unlocked (optional): location to place list of items or collections that
+//      were unlocked.
+//    - gint: number of items or collections that were unlocked.
 //
 func (service *Service) UnlockSync(ctx context.Context, objects []gio.DBusProxy) ([]gio.DBusProxy, int, error) {
 	var _arg0 *C.SecretService // out
@@ -1880,9 +1996,9 @@ func ServiceDisconnect() {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //    - flags for which service functionality to ensure is initialized.
-//    - callback: called when the operation completes.
+//    - callback (optional): called when the operation completes.
 //
 func ServiceGet(ctx context.Context, flags ServiceFlags, callback gio.AsyncReadyCallback) {
 	var _arg2 *C.GCancellable       // out
@@ -1913,6 +2029,11 @@ func ServiceGet(ctx context.Context, flags ServiceFlags, callback gio.AsyncReady
 // The function takes the following parameters:
 //
 //    - result asynchronous result passed to the callback.
+//
+// The function returns the following values:
+//
+//    - service: new reference to a Service proxy, which should be released with
+//      g_object_unref().
 //
 func ServiceGetFinish(result gio.AsyncResulter) (*Service, error) {
 	var _arg1 *C.GAsyncResult  // out
@@ -1946,8 +2067,13 @@ func ServiceGetFinish(result gio.AsyncResulter) (*Service, error) {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //    - flags for which service functionality to ensure is initialized.
+//
+// The function returns the following values:
+//
+//    - service: new reference to a Service proxy, which should be released with
+//      g_object_unref().
 //
 func ServiceGetSync(ctx context.Context, flags ServiceFlags) (*Service, error) {
 	var _arg2 *C.GCancellable      // out
@@ -1993,11 +2119,11 @@ func ServiceGetSync(ctx context.Context, flags ServiceFlags) (*Service, error) {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //    - serviceGtype: GType of the new secret service.
-//    - serviceBusName d-Bus service name of the secret service.
+//    - serviceBusName (optional) d-Bus service name of the secret service.
 //    - flags for which service functionality to ensure is initialized.
-//    - callback: called when the operation completes.
+//    - callback (optional): called when the operation completes.
 //
 func ServiceOpen(ctx context.Context, serviceGtype externglib.Type, serviceBusName string, flags ServiceFlags, callback gio.AsyncReadyCallback) {
 	var _arg4 *C.GCancellable       // out
@@ -2038,6 +2164,11 @@ func ServiceOpen(ctx context.Context, serviceGtype externglib.Type, serviceBusNa
 //
 //    - result asynchronous result passed to the callback.
 //
+// The function returns the following values:
+//
+//    - service: new reference to a Service proxy, which should be released with
+//      g_object_unref().
+//
 func ServiceOpenFinish(result gio.AsyncResulter) (*Service, error) {
 	var _arg1 *C.GAsyncResult  // out
 	var _cret *C.SecretService // in
@@ -2076,10 +2207,15 @@ func ServiceOpenFinish(result gio.AsyncResulter) (*Service, error) {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //    - serviceGtype: GType of the new secret service.
-//    - serviceBusName d-Bus service name of the secret service.
+//    - serviceBusName (optional) d-Bus service name of the secret service.
 //    - flags for which service functionality to ensure is initialized.
+//
+// The function returns the following values:
+//
+//    - service: new reference to a Service proxy, which should be released with
+//      g_object_unref().
 //
 func ServiceOpenSync(ctx context.Context, serviceGtype externglib.Type, serviceBusName string, flags ServiceFlags) (*Service, error) {
 	var _arg4 *C.GCancellable      // out

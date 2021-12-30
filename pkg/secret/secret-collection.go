@@ -17,8 +17,6 @@ import (
 	"github.com/diamondburned/gotk4/pkg/gio/v2"
 )
 
-// #cgo pkg-config: libsecret-1
-// #cgo CFLAGS: -Wno-deprecated-declarations
 // #include <stdlib.h>
 // #include <glib-object.h>
 // #include <libsecret/secret.h>
@@ -127,6 +125,7 @@ func (c CollectionFlags) Has(other CollectionFlags) bool {
 // Collection: proxy object representing a collection of secrets in the Secret
 // Service.
 type Collection struct {
+	_ [0]func() // equal guard
 	gio.DBusProxy
 }
 
@@ -163,8 +162,8 @@ func marshalCollectioner(p uintptr) (interface{}, error) {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - callback: called when the operation completes.
+//    - ctx (optional): optional cancellation object.
+//    - callback (optional): called when the operation completes.
 //
 func (self *Collection) Delete(ctx context.Context, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretCollection   // out
@@ -224,7 +223,7 @@ func (self *Collection) DeleteFinish(result gio.AsyncResulter) error {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //
 func (self *Collection) DeleteSync(ctx context.Context) error {
 	var _arg0 *C.SecretCollection // out
@@ -253,6 +252,11 @@ func (self *Collection) DeleteSync(ctx context.Context) error {
 
 // Created: get the created date and time of the collection. The return value is
 // the number of seconds since the unix epoch, January 1st 1970.
+//
+// The function returns the following values:
+//
+//    - guint64: created date and time.
+//
 func (self *Collection) Created() uint64 {
 	var _arg0 *C.SecretCollection // out
 	var _cret C.guint64           // in
@@ -274,6 +278,11 @@ func (self *Collection) Created() uint64 {
 //
 // Use secret_collection_load_items() to initialize further features and change
 // the flags.
+//
+// The function returns the following values:
+//
+//    - collectionFlags flags for features initialized.
+//
 func (self *Collection) Flags() CollectionFlags {
 	var _arg0 *C.SecretCollection     // out
 	var _cret C.SecretCollectionFlags // in
@@ -291,6 +300,12 @@ func (self *Collection) Flags() CollectionFlags {
 }
 
 // Items: get the list of items in this collection.
+//
+// The function returns the following values:
+//
+//    - list of items, when done, the list should be freed with g_list_free, and
+//      each item should be released with g_object_unref().
+//
 func (self *Collection) Items() []Item {
 	var _arg0 *C.SecretCollection // out
 	var _cret *C.GList            // in
@@ -314,6 +329,11 @@ func (self *Collection) Items() []Item {
 }
 
 // Label: get the label of this collection.
+//
+// The function returns the following values:
+//
+//    - utf8: label, which should be freed with g_free().
+//
 func (self *Collection) Label() string {
 	var _arg0 *C.SecretCollection // out
 	var _cret *C.gchar            // in
@@ -335,6 +355,11 @@ func (self *Collection) Label() string {
 //
 // Use secret_service_lock() or secret_service_unlock() to lock or unlock the
 // collection.
+//
+// The function returns the following values:
+//
+//    - ok: whether the collection is locked or not.
+//
 func (self *Collection) Locked() bool {
 	var _arg0 *C.SecretCollection // out
 	var _cret C.gboolean          // in
@@ -355,6 +380,11 @@ func (self *Collection) Locked() bool {
 
 // Modified: get the modified date and time of the collection. The return value
 // is the number of seconds since the unix epoch, January 1st 1970.
+//
+// The function returns the following values:
+//
+//    - guint64: modified date and time.
+//
 func (self *Collection) Modified() uint64 {
 	var _arg0 *C.SecretCollection // out
 	var _cret C.guint64           // in
@@ -372,6 +402,11 @@ func (self *Collection) Modified() uint64 {
 }
 
 // Service: get the Secret Service object that this collection was created with.
+//
+// The function returns the following values:
+//
+//    - service: secret Service object.
+//
 func (self *Collection) Service() *Service {
 	var _arg0 *C.SecretCollection // out
 	var _cret *C.SecretService    // in
@@ -399,8 +434,8 @@ func (self *Collection) Service() *Service {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - callback: called when the operation completes.
+//    - ctx (optional): optional cancellation object.
+//    - callback (optional): called when the operation completes.
 //
 func (self *Collection) LoadItems(ctx context.Context, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretCollection   // out
@@ -465,7 +500,7 @@ func (self *Collection) LoadItemsFinish(result gio.AsyncResulter) error {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //
 func (self *Collection) LoadItemsSync(ctx context.Context) error {
 	var _arg0 *C.SecretCollection // out
@@ -524,11 +559,11 @@ func (self *Collection) Refresh() {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - schema for the attributes.
+//    - ctx (optional): optional cancellation object.
+//    - schema (optional) for the attributes.
 //    - attributes: search for items matching these attributes.
 //    - flags: search option flags.
-//    - callback: called when the operation completes.
+//    - callback (optional): called when the operation completes.
 //
 func (self *Collection) Search(ctx context.Context, schema *Schema, attributes map[string]string, flags SearchFlags, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretCollection   // out
@@ -581,6 +616,10 @@ func (self *Collection) Search(ctx context.Context, schema *Schema, attributes m
 //
 //    - result asynchronous result passed to callback.
 //
+// The function returns the following values:
+//
+//    - list: a list of items that matched the search.
+//
 func (self *Collection) SearchFinish(result gio.AsyncResulter) ([]Item, error) {
 	var _arg0 *C.SecretCollection // out
 	var _arg1 *C.GAsyncResult     // out
@@ -630,10 +669,14 @@ func (self *Collection) SearchFinish(result gio.AsyncResulter) ([]Item, error) {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - schema for the attributes.
+//    - ctx (optional): optional cancellation object.
+//    - schema (optional) for the attributes.
 //    - attributes: search for items matching these attributes.
 //    - flags: search option flags.
+//
+// The function returns the following values:
+//
+//    - list: a list of items that matched the search.
 //
 func (self *Collection) SearchSync(ctx context.Context, schema *Schema, attributes map[string]string, flags SearchFlags) ([]Item, error) {
 	var _arg0 *C.SecretCollection // out
@@ -696,9 +739,9 @@ func (self *Collection) SearchSync(ctx context.Context, schema *Schema, attribut
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //    - label: new label.
-//    - callback: called when the operation completes.
+//    - callback (optional): called when the operation completes.
 //
 func (self *Collection) SetLabel(ctx context.Context, label string, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretCollection   // out
@@ -762,7 +805,7 @@ func (self *Collection) SetLabelFinish(result gio.AsyncResulter) error {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
+//    - ctx (optional): optional cancellation object.
 //    - label: new label.
 //
 func (self *Collection) SetLabelSync(ctx context.Context, label string) error {
@@ -811,12 +854,12 @@ func (self *Collection) SetLabelSync(ctx context.Context, label string) error {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - service: secret service object.
+//    - ctx (optional): optional cancellation object.
+//    - service (optional): secret service object.
 //    - label for the new collection.
-//    - alias to assign to the collection.
+//    - alias (optional) to assign to the collection.
 //    - flags: currently unused.
-//    - callback: called when the operation completes.
+//    - callback (optional): called when the operation completes.
 //
 func CollectionCreate(ctx context.Context, service *Service, label, alias string, flags CollectionCreateFlags, callback gio.AsyncReadyCallback) {
 	var _arg5 *C.GCancellable               // out
@@ -863,6 +906,11 @@ func CollectionCreate(ctx context.Context, service *Service, label, alias string
 //
 //    - result asynchronous result passed to the callback.
 //
+// The function returns the following values:
+//
+//    - collection: new collection, which should be unreferenced with
+//      g_object_unref().
+//
 func CollectionCreateFinish(result gio.AsyncResulter) (*Collection, error) {
 	var _arg1 *C.GAsyncResult     // out
 	var _cret *C.SecretCollection // in
@@ -901,11 +949,16 @@ func CollectionCreateFinish(result gio.AsyncResulter) (*Collection, error) {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - service: secret service object.
+//    - ctx (optional): optional cancellation object.
+//    - service (optional): secret service object.
 //    - label for the new collection.
-//    - alias to assign to the collection.
+//    - alias (optional) to assign to the collection.
 //    - flags: currently unused.
+//
+// The function returns the following values:
+//
+//    - collection: new collection, which should be unreferenced with
+//      g_object_unref().
 //
 func CollectionCreateSync(ctx context.Context, service *Service, label, alias string, flags CollectionCreateFlags) (*Collection, error) {
 	var _arg5 *C.GCancellable               // out
@@ -960,11 +1013,11 @@ func CollectionCreateSync(ctx context.Context, service *Service, label, alias st
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - service: secret service object.
+//    - ctx (optional): optional cancellation object.
+//    - service (optional): secret service object.
 //    - alias to lookup.
 //    - flags options for the collection initialization.
-//    - callback: called when the operation completes.
+//    - callback (optional): called when the operation completes.
 //
 func CollectionForAlias(ctx context.Context, service *Service, alias string, flags CollectionFlags, callback gio.AsyncReadyCallback) {
 	var _arg4 *C.GCancellable         // out
@@ -1005,6 +1058,10 @@ func CollectionForAlias(ctx context.Context, service *Service, alias string, fla
 //
 //    - result asynchronous result passed to callback.
 //
+// The function returns the following values:
+//
+//    - collection: collection, or NULL if none assigned to the alias.
+//
 func CollectionForAliasFinish(result gio.AsyncResulter) (*Collection, error) {
 	var _arg1 *C.GAsyncResult     // out
 	var _cret *C.SecretCollection // in
@@ -1036,10 +1093,14 @@ func CollectionForAliasFinish(result gio.AsyncResulter) (*Collection, error) {
 //
 // The function takes the following parameters:
 //
-//    - ctx: optional cancellation object.
-//    - service: secret service object.
+//    - ctx (optional): optional cancellation object.
+//    - service (optional): secret service object.
 //    - alias to lookup.
 //    - flags options for the collection initialization.
+//
+// The function returns the following values:
+//
+//    - collection: collection, or NULL if none assigned to the alias.
 //
 func CollectionForAliasSync(ctx context.Context, service *Service, alias string, flags CollectionFlags) (*Collection, error) {
 	var _arg4 *C.GCancellable         // out

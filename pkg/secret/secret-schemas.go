@@ -11,8 +11,6 @@ import (
 	externglib "github.com/diamondburned/gotk4/pkg/core/glib"
 )
 
-// #cgo pkg-config: libsecret-1
-// #cgo CFLAGS: -Wno-deprecated-declarations
 // #include <stdlib.h>
 // #include <glib-object.h>
 // #include <libsecret/secret.h>
@@ -60,6 +58,10 @@ func (s SchemaType) String() string {
 // The function takes the following parameters:
 //
 //    - typ: type of schema to get.
+//
+// The function returns the following values:
+//
+//    - schema type.
 //
 func GetSchema(typ SchemaType) *Schema {
 	var _arg1 C.SecretSchemaType // out
