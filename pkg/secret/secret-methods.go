@@ -15,9 +15,12 @@ import (
 // #include <libsecret/secret.h>
 import "C"
 
+// glib.Type values for secret-methods.go.
+var GTypeSearchFlags = externglib.Type(C.secret_search_flags_get_type())
+
 func init() {
 	externglib.RegisterGValueMarshalers([]externglib.TypeMarshaler{
-		{T: externglib.Type(C.secret_search_flags_get_type()), F: marshalSearchFlags},
+		{T: GTypeSearchFlags, F: marshalSearchFlags},
 	})
 }
 

@@ -17,7 +17,7 @@ import (
 
 // #include <stdlib.h>
 // #include <libsecret/secret.h>
-// void _gotk4_gio2_AsyncReadyCallback(GObject*, GAsyncResult*, gpointer);
+// extern void _gotk4_gio2_AsyncReadyCallback(GObject*, GAsyncResult*, gpointer);
 import "C"
 
 // PasswordClearFinish: finish an asynchronous operation to remove passwords
@@ -31,7 +31,7 @@ func PasswordClearFinish(result gio.AsyncResulter) error {
 	var _arg1 *C.GAsyncResult // out
 	var _cerr *C.GError       // in
 
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	C.secret_password_clear_finish(_arg1, &_cerr)
 	runtime.KeepAlive(result)
@@ -168,7 +168,7 @@ func PasswordLookupFinish(result gio.AsyncResulter) (string, error) {
 	var _cret *C.gchar        // in
 	var _cerr *C.GError       // in
 
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	_cret = C.secret_password_lookup_finish(_arg1, &_cerr)
 	runtime.KeepAlive(result)
@@ -315,7 +315,7 @@ func PasswordSearchFinish(result gio.AsyncResulter) ([]Retrievabler, error) {
 	var _cret *C.GList        // in
 	var _cerr *C.GError       // in
 
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	_cret = C.secret_password_search_finish(_arg1, &_cerr)
 	runtime.KeepAlive(result)
@@ -504,7 +504,7 @@ func PasswordStoreFinish(result gio.AsyncResulter) error {
 	var _arg1 *C.GAsyncResult // out
 	var _cerr *C.GError       // in
 
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	C.secret_password_store_finish(_arg1, &_cerr)
 	runtime.KeepAlive(result)

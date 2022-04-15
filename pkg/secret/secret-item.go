@@ -20,14 +20,21 @@ import (
 // #include <stdlib.h>
 // #include <glib-object.h>
 // #include <libsecret/secret.h>
-// void _gotk4_gio2_AsyncReadyCallback(GObject*, GAsyncResult*, gpointer);
+// extern void _gotk4_gio2_AsyncReadyCallback(GObject*, GAsyncResult*, gpointer);
 import "C"
+
+// glib.Type values for secret-item.go.
+var (
+	GTypeItemCreateFlags = externglib.Type(C.secret_item_create_flags_get_type())
+	GTypeItemFlags       = externglib.Type(C.secret_item_flags_get_type())
+	GTypeItem            = externglib.Type(C.secret_item_get_type())
+)
 
 func init() {
 	externglib.RegisterGValueMarshalers([]externglib.TypeMarshaler{
-		{T: externglib.Type(C.secret_item_create_flags_get_type()), F: marshalItemCreateFlags},
-		{T: externglib.Type(C.secret_item_flags_get_type()), F: marshalItemFlags},
-		{T: externglib.Type(C.secret_item_get_type()), F: marshalItemmer},
+		{T: GTypeItemCreateFlags, F: marshalItemCreateFlags},
+		{T: GTypeItemFlags, F: marshalItemFlags},
+		{T: GTypeItem, F: marshalItem},
 	})
 }
 
@@ -126,6 +133,10 @@ func (i ItemFlags) Has(other ItemFlags) bool {
 	return (i & other) == other
 }
 
+// ItemOverrider contains methods that are overridable.
+type ItemOverrider interface {
+}
+
 // Item: proxy object representing a secret item in the Secret Service.
 type Item struct {
 	_ [0]func() // equal guard
@@ -138,6 +149,14 @@ type Item struct {
 var (
 	_ externglib.Objector = (*Item)(nil)
 )
+
+func classInitItemmer(gclassPtr, data C.gpointer) {
+	C.g_type_class_add_private(gclassPtr, C.gsize(unsafe.Sizeof(uintptr(0))))
+
+	goffset := C.g_type_class_get_instance_private_offset(gclassPtr)
+	*(*C.gpointer)(unsafe.Add(unsafe.Pointer(gclassPtr), goffset)) = data
+
+}
 
 func wrapItem(obj *externglib.Object) *Item {
 	return &Item{
@@ -160,7 +179,7 @@ func wrapItem(obj *externglib.Object) *Item {
 	}
 }
 
-func marshalItemmer(p uintptr) (interface{}, error) {
+func marshalItem(p uintptr) (interface{}, error) {
 	return wrapItem(externglib.ValueFromNative(unsafe.Pointer(p)).Object()), nil
 }
 
@@ -181,7 +200,7 @@ func (self *Item) Delete(ctx context.Context, callback gio.AsyncReadyCallback) {
 	var _arg2 C.GAsyncReadyCallback // out
 	var _arg3 C.gpointer
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -209,8 +228,8 @@ func (self *Item) DeleteFinish(result gio.AsyncResulter) error {
 	var _arg1 *C.GAsyncResult // out
 	var _cerr *C.GError       // in
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	C.secret_item_delete_finish(_arg0, _arg1, &_cerr)
 	runtime.KeepAlive(self)
@@ -240,7 +259,7 @@ func (self *Item) DeleteSync(ctx context.Context) error {
 	var _arg1 *C.GCancellable // out
 	var _cerr *C.GError       // in
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -278,7 +297,7 @@ func (self *Item) Attributes() map[string]string {
 	var _arg0 *C.SecretItem // out
 	var _cret *C.GHashTable // in
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_item_get_attributes(_arg0)
 	runtime.KeepAlive(self)
@@ -312,7 +331,7 @@ func (self *Item) Created() uint64 {
 	var _arg0 *C.SecretItem // out
 	var _cret C.guint64     // in
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_item_get_created(_arg0)
 	runtime.KeepAlive(self)
@@ -338,7 +357,7 @@ func (self *Item) Flags() ItemFlags {
 	var _arg0 *C.SecretItem     // out
 	var _cret C.SecretItemFlags // in
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_item_get_flags(_arg0)
 	runtime.KeepAlive(self)
@@ -360,7 +379,7 @@ func (self *Item) Label() string {
 	var _arg0 *C.SecretItem // out
 	var _cret *C.gchar      // in
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_item_get_label(_arg0)
 	runtime.KeepAlive(self)
@@ -386,7 +405,7 @@ func (self *Item) Locked() bool {
 	var _arg0 *C.SecretItem // out
 	var _cret C.gboolean    // in
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_item_get_locked(_arg0)
 	runtime.KeepAlive(self)
@@ -411,7 +430,7 @@ func (self *Item) Modified() uint64 {
 	var _arg0 *C.SecretItem // out
 	var _cret C.guint64     // in
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_item_get_modified(_arg0)
 	runtime.KeepAlive(self)
@@ -434,7 +453,7 @@ func (self *Item) SchemaName() string {
 	var _arg0 *C.SecretItem // out
 	var _cret *C.gchar      // in
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_item_get_schema_name(_arg0)
 	runtime.KeepAlive(self)
@@ -463,7 +482,7 @@ func (self *Item) Secret() *Value {
 	var _arg0 *C.SecretItem  // out
 	var _cret *C.SecretValue // in
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_item_get_secret(_arg0)
 	runtime.KeepAlive(self)
@@ -493,7 +512,7 @@ func (self *Item) Service() *Service {
 	var _arg0 *C.SecretItem    // out
 	var _cret *C.SecretService // in
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_item_get_service(_arg0)
 	runtime.KeepAlive(self)
@@ -525,7 +544,7 @@ func (self *Item) LoadSecret(ctx context.Context, callback gio.AsyncReadyCallbac
 	var _arg2 C.GAsyncReadyCallback // out
 	var _arg3 C.gpointer
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -557,8 +576,8 @@ func (self *Item) LoadSecretFinish(result gio.AsyncResulter) error {
 	var _arg1 *C.GAsyncResult // out
 	var _cerr *C.GError       // in
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	C.secret_item_load_secret_finish(_arg0, _arg1, &_cerr)
 	runtime.KeepAlive(self)
@@ -590,7 +609,7 @@ func (self *Item) LoadSecretSync(ctx context.Context) error {
 	var _arg1 *C.GCancellable // out
 	var _cerr *C.GError       // in
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -618,7 +637,7 @@ func (self *Item) LoadSecretSync(ctx context.Context) error {
 func (self *Item) Refresh() {
 	var _arg0 *C.SecretItem // out
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	C.secret_item_refresh(_arg0)
 	runtime.KeepAlive(self)
@@ -647,7 +666,7 @@ func (self *Item) SetAttributes(ctx context.Context, schema *Schema, attributes 
 	var _arg4 C.GAsyncReadyCallback // out
 	var _arg5 C.gpointer
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -691,8 +710,8 @@ func (self *Item) SetAttributesFinish(result gio.AsyncResulter) error {
 	var _arg1 *C.GAsyncResult // out
 	var _cerr *C.GError       // in
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	C.secret_item_set_attributes_finish(_arg0, _arg1, &_cerr)
 	runtime.KeepAlive(self)
@@ -729,7 +748,7 @@ func (self *Item) SetAttributesSync(ctx context.Context, schema *Schema, attribu
 	var _arg2 *C.GHashTable   // out
 	var _cerr *C.GError       // in
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -782,7 +801,7 @@ func (self *Item) SetLabel(ctx context.Context, label string, callback gio.Async
 	var _arg3 C.GAsyncReadyCallback // out
 	var _arg4 C.gpointer
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -814,8 +833,8 @@ func (self *Item) SetLabelFinish(result gio.AsyncResulter) error {
 	var _arg1 *C.GAsyncResult // out
 	var _cerr *C.GError       // in
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	C.secret_item_set_label_finish(_arg0, _arg1, &_cerr)
 	runtime.KeepAlive(self)
@@ -846,7 +865,7 @@ func (self *Item) SetLabelSync(ctx context.Context, label string) error {
 	var _arg1 *C.gchar        // out
 	var _cerr *C.GError       // in
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -889,7 +908,7 @@ func (self *Item) SetSecret(ctx context.Context, value *Value, callback gio.Asyn
 	var _arg3 C.GAsyncReadyCallback // out
 	var _arg4 C.gpointer
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -920,8 +939,8 @@ func (self *Item) SetSecretFinish(result gio.AsyncResulter) error {
 	var _arg1 *C.GAsyncResult // out
 	var _cerr *C.GError       // in
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	C.secret_item_set_secret_finish(_arg0, _arg1, &_cerr)
 	runtime.KeepAlive(self)
@@ -955,7 +974,7 @@ func (self *Item) SetSecretSync(ctx context.Context, value *Value) error {
 	var _arg1 *C.SecretValue  // out
 	var _cerr *C.GError       // in
 
-	_arg0 = (*C.SecretItem)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -1014,7 +1033,7 @@ func ItemCreate(ctx context.Context, collection *Collection, schema *Schema, att
 		defer runtime.KeepAlive(cancellable)
 		_arg7 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.SecretCollection)(unsafe.Pointer(collection.Native()))
+	_arg1 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(collection).Native()))
 	if schema != nil {
 		_arg2 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
 	}
@@ -1065,7 +1084,7 @@ func ItemCreateFinish(result gio.AsyncResulter) (*Item, error) {
 	var _cret *C.SecretItem   // in
 	var _cerr *C.GError       // in
 
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	_cret = C.secret_item_create_finish(_arg1, &_cerr)
 	runtime.KeepAlive(result)
@@ -1121,7 +1140,7 @@ func ItemCreateSync(ctx context.Context, collection *Collection, schema *Schema,
 		defer runtime.KeepAlive(cancellable)
 		_arg7 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.SecretCollection)(unsafe.Pointer(collection.Native()))
+	_arg1 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(collection).Native()))
 	if schema != nil {
 		_arg2 = (*C.SecretSchema)(gextras.StructNative(unsafe.Pointer(schema)))
 	}
@@ -1188,7 +1207,7 @@ func ItemLoadSecrets(ctx context.Context, items []Item, callback gio.AsyncReadyC
 	for i := len(items) - 1; i >= 0; i-- {
 		src := items[i]
 		var dst *C.SecretItem // out
-		dst = (*C.SecretItem)(unsafe.Pointer((&src).Native()))
+		dst = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject((&src)).Native()))
 		_arg1 = C.g_list_prepend(_arg1, C.gpointer(unsafe.Pointer(dst)))
 	}
 	defer C.g_list_free(_arg1)
@@ -1216,7 +1235,7 @@ func ItemLoadSecretsFinish(result gio.AsyncResulter) error {
 	var _arg1 *C.GAsyncResult // out
 	var _cerr *C.GError       // in
 
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	C.secret_item_load_secrets_finish(_arg1, &_cerr)
 	runtime.KeepAlive(result)
@@ -1258,7 +1277,7 @@ func ItemLoadSecretsSync(ctx context.Context, items []Item) error {
 	for i := len(items) - 1; i >= 0; i-- {
 		src := items[i]
 		var dst *C.SecretItem // out
-		dst = (*C.SecretItem)(unsafe.Pointer((&src).Native()))
+		dst = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject((&src)).Native()))
 		_arg1 = C.g_list_prepend(_arg1, C.gpointer(unsafe.Pointer(dst)))
 	}
 	defer C.g_list_free(_arg1)

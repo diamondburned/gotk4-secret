@@ -19,13 +19,20 @@ import (
 // #include <stdlib.h>
 // #include <glib-object.h>
 // #include <libsecret/secret.h>
-// void _gotk4_gio2_AsyncReadyCallback(GObject*, GAsyncResult*, gpointer);
+// extern void _gotk4_gio2_AsyncReadyCallback(GObject*, GAsyncResult*, gpointer);
 import "C"
+
+// glib.Type values for secret-prompt.go.
+var GTypePrompt = externglib.Type(C.secret_prompt_get_type())
 
 func init() {
 	externglib.RegisterGValueMarshalers([]externglib.TypeMarshaler{
-		{T: externglib.Type(C.secret_prompt_get_type()), F: marshalPrompter},
+		{T: GTypePrompt, F: marshalPrompt},
 	})
+}
+
+// PromptOverrider contains methods that are overridable.
+type PromptOverrider interface {
 }
 
 // Prompt: proxy object representing a prompt that the Secret Service will
@@ -38,6 +45,14 @@ type Prompt struct {
 var (
 	_ externglib.Objector = (*Prompt)(nil)
 )
+
+func classInitPrompter(gclassPtr, data C.gpointer) {
+	C.g_type_class_add_private(gclassPtr, C.gsize(unsafe.Sizeof(uintptr(0))))
+
+	goffset := C.g_type_class_get_instance_private_offset(gclassPtr)
+	*(*C.gpointer)(unsafe.Add(unsafe.Pointer(gclassPtr), goffset)) = data
+
+}
 
 func wrapPrompt(obj *externglib.Object) *Prompt {
 	return &Prompt{
@@ -56,7 +71,7 @@ func wrapPrompt(obj *externglib.Object) *Prompt {
 	}
 }
 
-func marshalPrompter(p uintptr) (interface{}, error) {
+func marshalPrompt(p uintptr) (interface{}, error) {
 	return wrapPrompt(externglib.ValueFromNative(unsafe.Pointer(p)).Object()), nil
 }
 
@@ -87,7 +102,7 @@ func (self *Prompt) Perform(ctx context.Context, windowId string, returnType *gl
 	var _arg4 C.GAsyncReadyCallback // out
 	var _arg5 C.gpointer
 
-	_arg0 = (*C.SecretPrompt)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretPrompt)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -133,8 +148,8 @@ func (self *Prompt) PerformFinish(result gio.AsyncResulter) (*glib.Variant, erro
 	var _cret *C.GVariant     // in
 	var _cerr *C.GError       // in
 
-	_arg0 = (*C.SecretPrompt)(unsafe.Pointer(self.Native()))
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg0 = (*C.SecretPrompt)(unsafe.Pointer(externglib.InternObject(self).Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	_cret = C.secret_prompt_perform_finish(_arg0, _arg1, &_cerr)
 	runtime.KeepAlive(self)
@@ -190,7 +205,7 @@ func (self *Prompt) PerformSync(ctx context.Context, windowId string, returnType
 	var _cret *C.GVariant     // in
 	var _cerr *C.GError       // in
 
-	_arg0 = (*C.SecretPrompt)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretPrompt)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -260,7 +275,7 @@ func (self *Prompt) Run(ctx context.Context, windowId string, returnType *glib.V
 	var _cret *C.GVariant     // in
 	var _cerr *C.GError       // in
 
-	_arg0 = (*C.SecretPrompt)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretPrompt)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)

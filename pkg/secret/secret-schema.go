@@ -17,12 +17,20 @@ import (
 // #include <libsecret/secret.h>
 import "C"
 
+// glib.Type values for secret-schema.go.
+var (
+	GTypeSchemaAttributeType = externglib.Type(C.secret_schema_attribute_type_get_type())
+	GTypeSchemaFlags         = externglib.Type(C.secret_schema_flags_get_type())
+	GTypeSchema              = externglib.Type(C.secret_schema_get_type())
+	GTypeSchemaAttribute     = externglib.Type(C.secret_schema_attribute_get_type())
+)
+
 func init() {
 	externglib.RegisterGValueMarshalers([]externglib.TypeMarshaler{
-		{T: externglib.Type(C.secret_schema_attribute_type_get_type()), F: marshalSchemaAttributeType},
-		{T: externglib.Type(C.secret_schema_flags_get_type()), F: marshalSchemaFlags},
-		{T: externglib.Type(C.secret_schema_get_type()), F: marshalSchema},
-		{T: externglib.Type(C.secret_schema_attribute_get_type()), F: marshalSchemaAttribute},
+		{T: GTypeSchemaAttributeType, F: marshalSchemaAttributeType},
+		{T: GTypeSchemaFlags, F: marshalSchemaFlags},
+		{T: GTypeSchema, F: marshalSchema},
+		{T: GTypeSchemaAttribute, F: marshalSchemaAttribute},
 	})
 }
 

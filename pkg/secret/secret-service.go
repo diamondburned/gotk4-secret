@@ -21,13 +21,23 @@ import (
 // #include <stdlib.h>
 // #include <glib-object.h>
 // #include <libsecret/secret.h>
-// void _gotk4_gio2_AsyncReadyCallback(GObject*, GAsyncResult*, gpointer);
+// extern GType _gotk4_secret1_ServiceClass_get_collection_gtype(SecretService*);
+// extern GType _gotk4_secret1_ServiceClass_get_item_gtype(SecretService*);
+// extern GVariant* _gotk4_secret1_ServiceClass_prompt_finish(SecretService*, GAsyncResult*, GError**);
+// extern GVariant* _gotk4_secret1_ServiceClass_prompt_sync(SecretService*, SecretPrompt*, GCancellable*, GVariantType*, GError**);
+// extern void _gotk4_gio2_AsyncReadyCallback(GObject*, GAsyncResult*, gpointer);
 import "C"
+
+// glib.Type values for secret-service.go.
+var (
+	GTypeServiceFlags = externglib.Type(C.secret_service_flags_get_type())
+	GTypeService      = externglib.Type(C.secret_service_get_type())
+)
 
 func init() {
 	externglib.RegisterGValueMarshalers([]externglib.TypeMarshaler{
-		{T: externglib.Type(C.secret_service_flags_get_type()), F: marshalServiceFlags},
-		{T: externglib.Type(C.secret_service_get_type()), F: marshalServicer},
+		{T: GTypeServiceFlags, F: marshalServiceFlags},
+		{T: GTypeService, F: marshalService},
 	})
 }
 
@@ -85,9 +95,6 @@ func (s ServiceFlags) Has(other ServiceFlags) bool {
 }
 
 // ServiceOverrider contains methods that are overridable.
-//
-// As of right now, interface overriding and subclassing is not supported
-// yet, so the interface currently has no use.
 type ServiceOverrider interface {
 	// CollectionGType: get the GObject type for collections instantiated by
 	// this service. This will always be either Collection or derived from it.
@@ -105,14 +112,6 @@ type ServiceOverrider interface {
 	//    - gType: gobject type for items.
 	//
 	ItemGType() externglib.Type
-	// The function takes the following parameters:
-	//
-	//    - ctx (optional)
-	//    - prompt
-	//    - returnType
-	//    - callback (optional)
-	//
-	PromptAsync(ctx context.Context, prompt *Prompt, returnType *glib.VariantType, callback gio.AsyncReadyCallback)
 	// PromptFinish: complete asynchronous operation to perform prompting for a
 	// Prompt.
 	//
@@ -169,6 +168,126 @@ var (
 	_ externglib.Objector = (*Service)(nil)
 )
 
+func classInitServicer(gclassPtr, data C.gpointer) {
+	C.g_type_class_add_private(gclassPtr, C.gsize(unsafe.Sizeof(uintptr(0))))
+
+	goffset := C.g_type_class_get_instance_private_offset(gclassPtr)
+	*(*C.gpointer)(unsafe.Add(unsafe.Pointer(gclassPtr), goffset)) = data
+
+	goval := gbox.Get(uintptr(data))
+	pclass := (*C.SecretServiceClass)(unsafe.Pointer(gclassPtr))
+	// gclass := (*C.GTypeClass)(unsafe.Pointer(gclassPtr))
+	// pclass := (*C.SecretServiceClass)(unsafe.Pointer(C.g_type_class_peek_parent(gclass)))
+
+	if _, ok := goval.(interface{ CollectionGType() externglib.Type }); ok {
+		pclass.get_collection_gtype = (*[0]byte)(C._gotk4_secret1_ServiceClass_get_collection_gtype)
+	}
+
+	if _, ok := goval.(interface{ ItemGType() externglib.Type }); ok {
+		pclass.get_item_gtype = (*[0]byte)(C._gotk4_secret1_ServiceClass_get_item_gtype)
+	}
+
+	if _, ok := goval.(interface {
+		PromptFinish(result gio.AsyncResulter) (*glib.Variant, error)
+	}); ok {
+		pclass.prompt_finish = (*[0]byte)(C._gotk4_secret1_ServiceClass_prompt_finish)
+	}
+
+	if _, ok := goval.(interface {
+		PromptSync(ctx context.Context, prompt *Prompt, returnType *glib.VariantType) (*glib.Variant, error)
+	}); ok {
+		pclass.prompt_sync = (*[0]byte)(C._gotk4_secret1_ServiceClass_prompt_sync)
+	}
+}
+
+//export _gotk4_secret1_ServiceClass_get_collection_gtype
+func _gotk4_secret1_ServiceClass_get_collection_gtype(arg0 *C.SecretService) (cret C.GType) {
+	goval := externglib.GoPrivateFromObject(unsafe.Pointer(arg0))
+	iface := goval.(interface{ CollectionGType() externglib.Type })
+
+	gType := iface.CollectionGType()
+
+	cret = C.GType(gType)
+
+	return cret
+}
+
+//export _gotk4_secret1_ServiceClass_get_item_gtype
+func _gotk4_secret1_ServiceClass_get_item_gtype(arg0 *C.SecretService) (cret C.GType) {
+	goval := externglib.GoPrivateFromObject(unsafe.Pointer(arg0))
+	iface := goval.(interface{ ItemGType() externglib.Type })
+
+	gType := iface.ItemGType()
+
+	cret = C.GType(gType)
+
+	return cret
+}
+
+//export _gotk4_secret1_ServiceClass_prompt_finish
+func _gotk4_secret1_ServiceClass_prompt_finish(arg0 *C.SecretService, arg1 *C.GAsyncResult, _cerr **C.GError) (cret *C.GVariant) {
+	goval := externglib.GoPrivateFromObject(unsafe.Pointer(arg0))
+	iface := goval.(interface {
+		PromptFinish(result gio.AsyncResulter) (*glib.Variant, error)
+	})
+
+	var _result gio.AsyncResulter // out
+
+	{
+		objptr := unsafe.Pointer(arg1)
+		if objptr == nil {
+			panic("object of type gio.AsyncResulter is nil")
+		}
+
+		object := externglib.Take(objptr)
+		casted := object.WalkCast(func(obj externglib.Objector) bool {
+			_, ok := obj.(gio.AsyncResulter)
+			return ok
+		})
+		rv, ok := casted.(gio.AsyncResulter)
+		if !ok {
+			panic("no marshaler for " + object.TypeFromInstance().String() + " matching gio.AsyncResulter")
+		}
+		_result = rv
+	}
+
+	variant, _goerr := iface.PromptFinish(_result)
+
+	cret = (*C.GVariant)(gextras.StructNative(unsafe.Pointer(variant)))
+	if _goerr != nil && _cerr != nil {
+		*_cerr = (*C.GError)(gerror.New(_goerr))
+	}
+
+	return cret
+}
+
+//export _gotk4_secret1_ServiceClass_prompt_sync
+func _gotk4_secret1_ServiceClass_prompt_sync(arg0 *C.SecretService, arg1 *C.SecretPrompt, arg2 *C.GCancellable, arg3 *C.GVariantType, _cerr **C.GError) (cret *C.GVariant) {
+	goval := externglib.GoPrivateFromObject(unsafe.Pointer(arg0))
+	iface := goval.(interface {
+		PromptSync(ctx context.Context, prompt *Prompt, returnType *glib.VariantType) (*glib.Variant, error)
+	})
+
+	var _cancellable context.Context  // out
+	var _prompt *Prompt               // out
+	var _returnType *glib.VariantType // out
+
+	if arg2 != nil {
+		_cancellable = gcancel.NewCancellableContext(unsafe.Pointer(arg2))
+	}
+	_prompt = wrapPrompt(externglib.Take(unsafe.Pointer(arg1)))
+	_returnType = (*glib.VariantType)(gextras.NewStructNative(unsafe.Pointer(arg3)))
+
+	variant, _goerr := iface.PromptSync(_cancellable, _prompt, _returnType)
+
+	cret = (*C.GVariant)(gextras.StructNative(unsafe.Pointer(variant)))
+	if _goerr != nil && _cerr != nil {
+		*_cerr = (*C.GError)(gerror.New(_goerr))
+	}
+
+	return cret
+}
+
 func wrapService(obj *externglib.Object) *Service {
 	return &Service{
 		DBusProxy: gio.DBusProxy{
@@ -186,7 +305,7 @@ func wrapService(obj *externglib.Object) *Service {
 	}
 }
 
-func marshalServicer(p uintptr) (interface{}, error) {
+func marshalService(p uintptr) (interface{}, error) {
 	return wrapService(externglib.ValueFromNative(unsafe.Pointer(p)).Object()), nil
 }
 
@@ -216,7 +335,7 @@ func (service *Service) Clear(ctx context.Context, schema *Schema, attributes ma
 	var _arg5 C.gpointer
 
 	if service != nil {
-		_arg0 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
@@ -263,9 +382,9 @@ func (service *Service) ClearFinish(result gio.AsyncResulter) error {
 	var _cerr *C.GError        // in
 
 	if service != nil {
-		_arg0 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	C.secret_service_clear_finish(_arg0, _arg1, &_cerr)
 	runtime.KeepAlive(service)
@@ -305,7 +424,7 @@ func (service *Service) ClearSync(ctx context.Context, schema *Schema, attribute
 	var _cerr *C.GError        // in
 
 	if service != nil {
-		_arg0 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
@@ -363,7 +482,7 @@ func (self *Service) EnsureSession(ctx context.Context, callback gio.AsyncReadyC
 	var _arg2 C.GAsyncReadyCallback // out
 	var _arg3 C.gpointer
 
-	_arg0 = (*C.SecretService)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -392,8 +511,8 @@ func (self *Service) EnsureSessionFinish(result gio.AsyncResulter) error {
 	var _arg1 *C.GAsyncResult  // out
 	var _cerr *C.GError        // in
 
-	_arg0 = (*C.SecretService)(unsafe.Pointer(self.Native()))
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(self).Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	C.secret_service_ensure_session_finish(_arg0, _arg1, &_cerr)
 	runtime.KeepAlive(self)
@@ -428,7 +547,7 @@ func (self *Service) EnsureSessionSync(ctx context.Context) error {
 	var _arg1 *C.GCancellable  // out
 	var _cerr *C.GError        // in
 
-	_arg0 = (*C.SecretService)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -459,7 +578,7 @@ func (self *Service) CollectionGType() externglib.Type {
 	var _arg0 *C.SecretService // out
 	var _cret C.GType          // in
 
-	_arg0 = (*C.SecretService)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_service_get_collection_gtype(_arg0)
 	runtime.KeepAlive(self)
@@ -486,7 +605,7 @@ func (self *Service) Collections() []Collection {
 	var _arg0 *C.SecretService // out
 	var _cret *C.GList         // in
 
-	_arg0 = (*C.SecretService)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_service_get_collections(_arg0)
 	runtime.KeepAlive(self)
@@ -520,7 +639,7 @@ func (self *Service) Flags() ServiceFlags {
 	var _arg0 *C.SecretService     // out
 	var _cret C.SecretServiceFlags // in
 
-	_arg0 = (*C.SecretService)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_service_get_flags(_arg0)
 	runtime.KeepAlive(self)
@@ -543,7 +662,7 @@ func (self *Service) ItemGType() externglib.Type {
 	var _arg0 *C.SecretService // out
 	var _cret C.GType          // in
 
-	_arg0 = (*C.SecretService)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_service_get_item_gtype(_arg0)
 	runtime.KeepAlive(self)
@@ -570,7 +689,7 @@ func (self *Service) SessionAlgorithms() string {
 	var _arg0 *C.SecretService // out
 	var _cret *C.gchar         // in
 
-	_arg0 = (*C.SecretService)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_service_get_session_algorithms(_arg0)
 	runtime.KeepAlive(self)
@@ -605,7 +724,7 @@ func (self *Service) LoadCollections(ctx context.Context, callback gio.AsyncRead
 	var _arg2 C.GAsyncReadyCallback // out
 	var _arg3 C.gpointer
 
-	_arg0 = (*C.SecretService)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -634,8 +753,8 @@ func (self *Service) LoadCollectionsFinish(result gio.AsyncResulter) error {
 	var _arg1 *C.GAsyncResult  // out
 	var _cerr *C.GError        // in
 
-	_arg0 = (*C.SecretService)(unsafe.Pointer(self.Native()))
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(self).Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	C.secret_service_load_collections_finish(_arg0, _arg1, &_cerr)
 	runtime.KeepAlive(self)
@@ -670,7 +789,7 @@ func (self *Service) LoadCollectionsSync(ctx context.Context) error {
 	var _arg1 *C.GCancellable  // out
 	var _cerr *C.GError        // in
 
-	_arg0 = (*C.SecretService)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -716,7 +835,7 @@ func (service *Service) Lock(ctx context.Context, objects []gio.DBusProxy, callb
 	var _arg4 C.gpointer
 
 	if service != nil {
-		_arg0 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
@@ -726,7 +845,7 @@ func (service *Service) Lock(ctx context.Context, objects []gio.DBusProxy, callb
 	for i := len(objects) - 1; i >= 0; i-- {
 		src := objects[i]
 		var dst *C.GDBusProxy // out
-		dst = (*C.GDBusProxy)(unsafe.Pointer((&src).Native()))
+		dst = (*C.GDBusProxy)(unsafe.Pointer(externglib.InternObject((&src)).Native()))
 		_arg1 = C.g_list_prepend(_arg1, C.gpointer(unsafe.Pointer(dst)))
 	}
 	defer C.g_list_free(_arg1)
@@ -766,9 +885,9 @@ func (service *Service) LockFinish(result gio.AsyncResulter) ([]gio.DBusProxy, i
 	var _cerr *C.GError        // in
 
 	if service != nil {
-		_arg0 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	_cret = C.secret_service_lock_finish(_arg0, _arg1, &_arg2, &_cerr)
 	runtime.KeepAlive(service)
@@ -841,7 +960,7 @@ func (service *Service) LockSync(ctx context.Context, objects []gio.DBusProxy) (
 	var _cerr *C.GError        // in
 
 	if service != nil {
-		_arg0 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
@@ -851,7 +970,7 @@ func (service *Service) LockSync(ctx context.Context, objects []gio.DBusProxy) (
 	for i := len(objects) - 1; i >= 0; i-- {
 		src := objects[i]
 		var dst *C.GDBusProxy // out
-		dst = (*C.GDBusProxy)(unsafe.Pointer((&src).Native()))
+		dst = (*C.GDBusProxy)(unsafe.Pointer(externglib.InternObject((&src)).Native()))
 		_arg1 = C.g_list_prepend(_arg1, C.gpointer(unsafe.Pointer(dst)))
 	}
 	defer C.g_list_free(_arg1)
@@ -921,7 +1040,7 @@ func (service *Service) Lookup(ctx context.Context, schema *Schema, attributes m
 	var _arg5 C.gpointer
 
 	if service != nil {
-		_arg0 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
@@ -976,9 +1095,9 @@ func (service *Service) LookupFinish(result gio.AsyncResulter) (*Value, error) {
 	var _cerr *C.GError        // in
 
 	if service != nil {
-		_arg0 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	_cret = C.secret_service_lookup_finish(_arg0, _arg1, &_cerr)
 	runtime.KeepAlive(service)
@@ -1031,7 +1150,7 @@ func (service *Service) LookupSync(ctx context.Context, schema *Schema, attribut
 	var _cerr *C.GError        // in
 
 	if service != nil {
-		_arg0 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
@@ -1100,13 +1219,13 @@ func (self *Service) Prompt(ctx context.Context, prompt *Prompt, returnType *gli
 	var _arg4 C.GAsyncReadyCallback // out
 	var _arg5 C.gpointer
 
-	_arg0 = (*C.SecretService)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
 		_arg3 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.SecretPrompt)(unsafe.Pointer(prompt.Native()))
+	_arg1 = (*C.SecretPrompt)(unsafe.Pointer(externglib.InternObject(prompt).Native()))
 	if returnType != nil {
 		_arg2 = (*C.GVariantType)(gextras.StructNative(unsafe.Pointer(returnType)))
 	}
@@ -1145,8 +1264,8 @@ func (self *Service) PromptFinish(result gio.AsyncResulter) (*glib.Variant, erro
 	var _cret *C.GVariant      // in
 	var _cerr *C.GError        // in
 
-	_arg0 = (*C.SecretService)(unsafe.Pointer(self.Native()))
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(self).Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	_cret = C.secret_service_prompt_finish(_arg0, _arg1, &_cerr)
 	runtime.KeepAlive(self)
@@ -1203,13 +1322,13 @@ func (self *Service) PromptSync(ctx context.Context, prompt *Prompt, returnType 
 	var _cret *C.GVariant      // in
 	var _cerr *C.GError        // in
 
-	_arg0 = (*C.SecretService)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
 		_arg2 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
-	_arg1 = (*C.SecretPrompt)(unsafe.Pointer(prompt.Native()))
+	_arg1 = (*C.SecretPrompt)(unsafe.Pointer(externglib.InternObject(prompt).Native()))
 	_arg3 = (*C.GVariantType)(gextras.StructNative(unsafe.Pointer(returnType)))
 
 	_cret = C.secret_service_prompt_sync(_arg0, _arg1, _arg2, _arg3, &_cerr)
@@ -1272,7 +1391,7 @@ func (service *Service) Search(ctx context.Context, schema *Schema, attributes m
 	var _arg6 C.gpointer
 
 	if service != nil {
-		_arg0 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
@@ -1325,9 +1444,9 @@ func (service *Service) SearchFinish(result gio.AsyncResulter) ([]Item, error) {
 	var _cerr *C.GError        // in
 
 	if service != nil {
-		_arg0 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	_cret = C.secret_service_search_finish(_arg0, _arg1, &_cerr)
 	runtime.KeepAlive(service)
@@ -1393,7 +1512,7 @@ func (service *Service) SearchSync(ctx context.Context, schema *Schema, attribut
 	var _cerr *C.GError           // in
 
 	if service != nil {
-		_arg0 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
@@ -1464,7 +1583,7 @@ func (service *Service) SetAlias(ctx context.Context, alias string, collection *
 	var _arg5 C.gpointer
 
 	if service != nil {
-		_arg0 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
@@ -1474,7 +1593,7 @@ func (service *Service) SetAlias(ctx context.Context, alias string, collection *
 	_arg1 = (*C.gchar)(unsafe.Pointer(C.CString(alias)))
 	defer C.free(unsafe.Pointer(_arg1))
 	if collection != nil {
-		_arg2 = (*C.SecretCollection)(unsafe.Pointer(collection.Native()))
+		_arg2 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(collection).Native()))
 	}
 	if callback != nil {
 		_arg4 = (*[0]byte)(C._gotk4_gio2_AsyncReadyCallback)
@@ -1502,9 +1621,9 @@ func (service *Service) SetAliasFinish(result gio.AsyncResulter) error {
 	var _cerr *C.GError        // in
 
 	if service != nil {
-		_arg0 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	C.secret_service_set_alias_finish(_arg0, _arg1, &_cerr)
 	runtime.KeepAlive(service)
@@ -1541,7 +1660,7 @@ func (service *Service) SetAliasSync(ctx context.Context, alias string, collecti
 	var _cerr *C.GError           // in
 
 	if service != nil {
-		_arg0 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
@@ -1551,7 +1670,7 @@ func (service *Service) SetAliasSync(ctx context.Context, alias string, collecti
 	_arg1 = (*C.gchar)(unsafe.Pointer(C.CString(alias)))
 	defer C.free(unsafe.Pointer(_arg1))
 	if collection != nil {
-		_arg2 = (*C.SecretCollection)(unsafe.Pointer(collection.Native()))
+		_arg2 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(collection).Native()))
 	}
 
 	C.secret_service_set_alias_sync(_arg0, _arg1, _arg2, _arg3, &_cerr)
@@ -1608,7 +1727,7 @@ func (service *Service) Store(ctx context.Context, schema *Schema, attributes ma
 	var _arg8 C.gpointer
 
 	if service != nil {
-		_arg0 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
@@ -1665,9 +1784,9 @@ func (service *Service) StoreFinish(result gio.AsyncResulter) error {
 	var _cerr *C.GError        // in
 
 	if service != nil {
-		_arg0 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	C.secret_service_store_finish(_arg0, _arg1, &_cerr)
 	runtime.KeepAlive(service)
@@ -1720,7 +1839,7 @@ func (service *Service) StoreSync(ctx context.Context, schema *Schema, attribute
 	var _cerr *C.GError        // in
 
 	if service != nil {
-		_arg0 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
@@ -1793,7 +1912,7 @@ func (service *Service) Unlock(ctx context.Context, objects []gio.DBusProxy, cal
 	var _arg4 C.gpointer
 
 	if service != nil {
-		_arg0 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
@@ -1803,7 +1922,7 @@ func (service *Service) Unlock(ctx context.Context, objects []gio.DBusProxy, cal
 	for i := len(objects) - 1; i >= 0; i-- {
 		src := objects[i]
 		var dst *C.GDBusProxy // out
-		dst = (*C.GDBusProxy)(unsafe.Pointer((&src).Native()))
+		dst = (*C.GDBusProxy)(unsafe.Pointer(externglib.InternObject((&src)).Native()))
 		_arg1 = C.g_list_prepend(_arg1, C.gpointer(unsafe.Pointer(dst)))
 	}
 	defer C.g_list_free(_arg1)
@@ -1843,9 +1962,9 @@ func (service *Service) UnlockFinish(result gio.AsyncResulter) ([]gio.DBusProxy,
 	var _cerr *C.GError        // in
 
 	if service != nil {
-		_arg0 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	_cret = C.secret_service_unlock_finish(_arg0, _arg1, &_arg2, &_cerr)
 	runtime.KeepAlive(service)
@@ -1918,7 +2037,7 @@ func (service *Service) UnlockSync(ctx context.Context, objects []gio.DBusProxy)
 	var _cerr *C.GError        // in
 
 	if service != nil {
-		_arg0 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg0 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
@@ -1928,7 +2047,7 @@ func (service *Service) UnlockSync(ctx context.Context, objects []gio.DBusProxy)
 	for i := len(objects) - 1; i >= 0; i-- {
 		src := objects[i]
 		var dst *C.GDBusProxy // out
-		dst = (*C.GDBusProxy)(unsafe.Pointer((&src).Native()))
+		dst = (*C.GDBusProxy)(unsafe.Pointer(externglib.InternObject((&src)).Native()))
 		_arg1 = C.g_list_prepend(_arg1, C.gpointer(unsafe.Pointer(dst)))
 	}
 	defer C.g_list_free(_arg1)
@@ -2040,7 +2159,7 @@ func ServiceGetFinish(result gio.AsyncResulter) (*Service, error) {
 	var _cret *C.SecretService // in
 	var _cerr *C.GError        // in
 
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	_cret = C.secret_service_get_finish(_arg1, &_cerr)
 	runtime.KeepAlive(result)
@@ -2174,7 +2293,7 @@ func ServiceOpenFinish(result gio.AsyncResulter) (*Service, error) {
 	var _cret *C.SecretService // in
 	var _cerr *C.GError        // in
 
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	_cret = C.secret_service_open_finish(_arg1, &_cerr)
 	runtime.KeepAlive(result)

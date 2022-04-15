@@ -20,14 +20,21 @@ import (
 // #include <stdlib.h>
 // #include <glib-object.h>
 // #include <libsecret/secret.h>
-// void _gotk4_gio2_AsyncReadyCallback(GObject*, GAsyncResult*, gpointer);
+// extern void _gotk4_gio2_AsyncReadyCallback(GObject*, GAsyncResult*, gpointer);
 import "C"
+
+// glib.Type values for secret-collection.go.
+var (
+	GTypeCollectionCreateFlags = externglib.Type(C.secret_collection_create_flags_get_type())
+	GTypeCollectionFlags       = externglib.Type(C.secret_collection_flags_get_type())
+	GTypeCollection            = externglib.Type(C.secret_collection_get_type())
+)
 
 func init() {
 	externglib.RegisterGValueMarshalers([]externglib.TypeMarshaler{
-		{T: externglib.Type(C.secret_collection_create_flags_get_type()), F: marshalCollectionCreateFlags},
-		{T: externglib.Type(C.secret_collection_flags_get_type()), F: marshalCollectionFlags},
-		{T: externglib.Type(C.secret_collection_get_type()), F: marshalCollectioner},
+		{T: GTypeCollectionCreateFlags, F: marshalCollectionCreateFlags},
+		{T: GTypeCollectionFlags, F: marshalCollectionFlags},
+		{T: GTypeCollection, F: marshalCollection},
 	})
 }
 
@@ -122,6 +129,10 @@ func (c CollectionFlags) Has(other CollectionFlags) bool {
 	return (c & other) == other
 }
 
+// CollectionOverrider contains methods that are overridable.
+type CollectionOverrider interface {
+}
+
 // Collection: proxy object representing a collection of secrets in the Secret
 // Service.
 type Collection struct {
@@ -132,6 +143,14 @@ type Collection struct {
 var (
 	_ externglib.Objector = (*Collection)(nil)
 )
+
+func classInitCollectioner(gclassPtr, data C.gpointer) {
+	C.g_type_class_add_private(gclassPtr, C.gsize(unsafe.Sizeof(uintptr(0))))
+
+	goffset := C.g_type_class_get_instance_private_offset(gclassPtr)
+	*(*C.gpointer)(unsafe.Add(unsafe.Pointer(gclassPtr), goffset)) = data
+
+}
 
 func wrapCollection(obj *externglib.Object) *Collection {
 	return &Collection{
@@ -150,7 +169,7 @@ func wrapCollection(obj *externglib.Object) *Collection {
 	}
 }
 
-func marshalCollectioner(p uintptr) (interface{}, error) {
+func marshalCollection(p uintptr) (interface{}, error) {
 	return wrapCollection(externglib.ValueFromNative(unsafe.Pointer(p)).Object()), nil
 }
 
@@ -171,7 +190,7 @@ func (self *Collection) Delete(ctx context.Context, callback gio.AsyncReadyCallb
 	var _arg2 C.GAsyncReadyCallback // out
 	var _arg3 C.gpointer
 
-	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -199,8 +218,8 @@ func (self *Collection) DeleteFinish(result gio.AsyncResulter) error {
 	var _arg1 *C.GAsyncResult     // out
 	var _cerr *C.GError           // in
 
-	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg0 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(self).Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	C.secret_collection_delete_finish(_arg0, _arg1, &_cerr)
 	runtime.KeepAlive(self)
@@ -230,7 +249,7 @@ func (self *Collection) DeleteSync(ctx context.Context) error {
 	var _arg1 *C.GCancellable     // out
 	var _cerr *C.GError           // in
 
-	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -261,7 +280,7 @@ func (self *Collection) Created() uint64 {
 	var _arg0 *C.SecretCollection // out
 	var _cret C.guint64           // in
 
-	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_collection_get_created(_arg0)
 	runtime.KeepAlive(self)
@@ -287,7 +306,7 @@ func (self *Collection) Flags() CollectionFlags {
 	var _arg0 *C.SecretCollection     // out
 	var _cret C.SecretCollectionFlags // in
 
-	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_collection_get_flags(_arg0)
 	runtime.KeepAlive(self)
@@ -310,7 +329,7 @@ func (self *Collection) Items() []Item {
 	var _arg0 *C.SecretCollection // out
 	var _cret *C.GList            // in
 
-	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_collection_get_items(_arg0)
 	runtime.KeepAlive(self)
@@ -338,7 +357,7 @@ func (self *Collection) Label() string {
 	var _arg0 *C.SecretCollection // out
 	var _cret *C.gchar            // in
 
-	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_collection_get_label(_arg0)
 	runtime.KeepAlive(self)
@@ -364,7 +383,7 @@ func (self *Collection) Locked() bool {
 	var _arg0 *C.SecretCollection // out
 	var _cret C.gboolean          // in
 
-	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_collection_get_locked(_arg0)
 	runtime.KeepAlive(self)
@@ -389,7 +408,7 @@ func (self *Collection) Modified() uint64 {
 	var _arg0 *C.SecretCollection // out
 	var _cret C.guint64           // in
 
-	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_collection_get_modified(_arg0)
 	runtime.KeepAlive(self)
@@ -411,7 +430,7 @@ func (self *Collection) Service() *Service {
 	var _arg0 *C.SecretCollection // out
 	var _cret *C.SecretService    // in
 
-	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_collection_get_service(_arg0)
 	runtime.KeepAlive(self)
@@ -443,7 +462,7 @@ func (self *Collection) LoadItems(ctx context.Context, callback gio.AsyncReadyCa
 	var _arg2 C.GAsyncReadyCallback // out
 	var _arg3 C.gpointer
 
-	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -472,8 +491,8 @@ func (self *Collection) LoadItemsFinish(result gio.AsyncResulter) error {
 	var _arg1 *C.GAsyncResult     // out
 	var _cerr *C.GError           // in
 
-	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg0 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(self).Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	C.secret_collection_load_items_finish(_arg0, _arg1, &_cerr)
 	runtime.KeepAlive(self)
@@ -507,7 +526,7 @@ func (self *Collection) LoadItemsSync(ctx context.Context) error {
 	var _arg1 *C.GCancellable     // out
 	var _cerr *C.GError           // in
 
-	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -535,7 +554,7 @@ func (self *Collection) LoadItemsSync(ctx context.Context) error {
 func (self *Collection) Refresh() {
 	var _arg0 *C.SecretCollection // out
 
-	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	C.secret_collection_refresh(_arg0)
 	runtime.KeepAlive(self)
@@ -574,7 +593,7 @@ func (self *Collection) Search(ctx context.Context, schema *Schema, attributes m
 	var _arg5 C.GAsyncReadyCallback // out
 	var _arg6 C.gpointer
 
-	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -626,8 +645,8 @@ func (self *Collection) SearchFinish(result gio.AsyncResulter) ([]Item, error) {
 	var _cret *C.GList            // in
 	var _cerr *C.GError           // in
 
-	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg0 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(self).Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	_cret = C.secret_collection_search_finish(_arg0, _arg1, &_cerr)
 	runtime.KeepAlive(self)
@@ -687,7 +706,7 @@ func (self *Collection) SearchSync(ctx context.Context, schema *Schema, attribut
 	var _cret *C.GList            // in
 	var _cerr *C.GError           // in
 
-	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -750,7 +769,7 @@ func (self *Collection) SetLabel(ctx context.Context, label string, callback gio
 	var _arg3 C.GAsyncReadyCallback // out
 	var _arg4 C.gpointer
 
-	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -782,8 +801,8 @@ func (self *Collection) SetLabelFinish(result gio.AsyncResulter) error {
 	var _arg1 *C.GAsyncResult     // out
 	var _cerr *C.GError           // in
 
-	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg0 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(self).Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	C.secret_collection_set_label_finish(_arg0, _arg1, &_cerr)
 	runtime.KeepAlive(self)
@@ -814,7 +833,7 @@ func (self *Collection) SetLabelSync(ctx context.Context, label string) error {
 	var _arg1 *C.gchar            // out
 	var _cerr *C.GError           // in
 
-	_arg0 = (*C.SecretCollection)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretCollection)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -876,7 +895,7 @@ func CollectionCreate(ctx context.Context, service *Service, label, alias string
 		_arg5 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
 	if service != nil {
-		_arg1 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg1 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
 	_arg2 = (*C.gchar)(unsafe.Pointer(C.CString(label)))
 	defer C.free(unsafe.Pointer(_arg2))
@@ -916,7 +935,7 @@ func CollectionCreateFinish(result gio.AsyncResulter) (*Collection, error) {
 	var _cret *C.SecretCollection // in
 	var _cerr *C.GError           // in
 
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	_cret = C.secret_collection_create_finish(_arg1, &_cerr)
 	runtime.KeepAlive(result)
@@ -975,7 +994,7 @@ func CollectionCreateSync(ctx context.Context, service *Service, label, alias st
 		_arg5 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
 	if service != nil {
-		_arg1 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg1 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
 	_arg2 = (*C.gchar)(unsafe.Pointer(C.CString(label)))
 	defer C.free(unsafe.Pointer(_arg2))
@@ -1033,7 +1052,7 @@ func CollectionForAlias(ctx context.Context, service *Service, alias string, fla
 		_arg4 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
 	if service != nil {
-		_arg1 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg1 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
 	_arg2 = (*C.gchar)(unsafe.Pointer(C.CString(alias)))
 	defer C.free(unsafe.Pointer(_arg2))
@@ -1067,7 +1086,7 @@ func CollectionForAliasFinish(result gio.AsyncResulter) (*Collection, error) {
 	var _cret *C.SecretCollection // in
 	var _cerr *C.GError           // in
 
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	_cret = C.secret_collection_for_alias_finish(_arg1, &_cerr)
 	runtime.KeepAlive(result)
@@ -1116,7 +1135,7 @@ func CollectionForAliasSync(ctx context.Context, service *Service, alias string,
 		_arg4 = (*C.GCancellable)(unsafe.Pointer(cancellable.Native()))
 	}
 	if service != nil {
-		_arg1 = (*C.SecretService)(unsafe.Pointer(service.Native()))
+		_arg1 = (*C.SecretService)(unsafe.Pointer(externglib.InternObject(service).Native()))
 	}
 	_arg2 = (*C.gchar)(unsafe.Pointer(C.CString(alias)))
 	defer C.free(unsafe.Pointer(_arg2))

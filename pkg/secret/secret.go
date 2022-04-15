@@ -17,9 +17,12 @@ import (
 // #include <libsecret/secret.h>
 import "C"
 
+// glib.Type values for secret.go.
+var GTypeError = externglib.Type(C.secret_error_get_type())
+
 func init() {
 	externglib.RegisterGValueMarshalers([]externglib.TypeMarshaler{
-		{T: externglib.Type(C.secret_error_get_type()), F: marshalError},
+		{T: GTypeError, F: marshalError},
 	})
 }
 

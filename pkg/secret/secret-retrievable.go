@@ -18,46 +18,17 @@ import (
 // #include <stdlib.h>
 // #include <glib-object.h>
 // #include <libsecret/secret.h>
-// void _gotk4_gio2_AsyncReadyCallback(GObject*, GAsyncResult*, gpointer);
+// extern SecretValue* _gotk4_secret1_RetrievableInterface_retrieve_secret_finish(SecretRetrievable*, GAsyncResult*, GError**);
+// extern void _gotk4_gio2_AsyncReadyCallback(GObject*, GAsyncResult*, gpointer);
 import "C"
+
+// glib.Type values for secret-retrievable.go.
+var GTypeRetrievable = externglib.Type(C.secret_retrievable_get_type())
 
 func init() {
 	externglib.RegisterGValueMarshalers([]externglib.TypeMarshaler{
-		{T: externglib.Type(C.secret_retrievable_get_type()), F: marshalRetrievabler},
+		{T: GTypeRetrievable, F: marshalRetrievable},
 	})
-}
-
-// RetrievableOverrider contains methods that are overridable.
-//
-// As of right now, interface overriding and subclassing is not supported
-// yet, so the interface currently has no use.
-type RetrievableOverrider interface {
-	// RetrieveSecret: retrieve the secret value of this object.
-	//
-	// Each retrievable object has a single secret which might be a password or
-	// some other secret binary value.
-	//
-	// This function returns immediately and completes asynchronously.
-	//
-	// The function takes the following parameters:
-	//
-	//    - ctx (optional): optional cancellation object.
-	//    - callback (optional): called when the operation completes.
-	//
-	RetrieveSecret(ctx context.Context, callback gio.AsyncReadyCallback)
-	// RetrieveSecretFinish: complete asynchronous operation to retrieve the
-	// secret value of this object.
-	//
-	// The function takes the following parameters:
-	//
-	//    - result asynchronous result passed to callback.
-	//
-	// The function returns the following values:
-	//
-	//    - value (optional): secret value which should be released with
-	//      secret_value_unref(), or NULL.
-	//
-	RetrieveSecretFinish(result gio.AsyncResulter) (*Value, error)
 }
 
 // Retrievable: object representing a read-only view of a secret item in the
@@ -101,7 +72,7 @@ func wrapRetrievable(obj *externglib.Object) *Retrievable {
 	}
 }
 
-func marshalRetrievabler(p uintptr) (interface{}, error) {
+func marshalRetrievable(p uintptr) (interface{}, error) {
 	return wrapRetrievable(externglib.ValueFromNative(unsafe.Pointer(p)).Object()), nil
 }
 
@@ -122,7 +93,7 @@ func (self *Retrievable) Attributes() map[string]string {
 	var _arg0 *C.SecretRetrievable // out
 	var _cret *C.GHashTable        // in
 
-	_arg0 = (*C.SecretRetrievable)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretRetrievable)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_retrievable_get_attributes(_arg0)
 	runtime.KeepAlive(self)
@@ -156,7 +127,7 @@ func (self *Retrievable) Created() uint64 {
 	var _arg0 *C.SecretRetrievable // out
 	var _cret C.guint64            // in
 
-	_arg0 = (*C.SecretRetrievable)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretRetrievable)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_retrievable_get_created(_arg0)
 	runtime.KeepAlive(self)
@@ -178,7 +149,7 @@ func (self *Retrievable) Label() string {
 	var _arg0 *C.SecretRetrievable // out
 	var _cret *C.gchar             // in
 
-	_arg0 = (*C.SecretRetrievable)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretRetrievable)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_retrievable_get_label(_arg0)
 	runtime.KeepAlive(self)
@@ -202,7 +173,7 @@ func (self *Retrievable) Modified() uint64 {
 	var _arg0 *C.SecretRetrievable // out
 	var _cret C.guint64            // in
 
-	_arg0 = (*C.SecretRetrievable)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretRetrievable)(unsafe.Pointer(externglib.InternObject(self).Native()))
 
 	_cret = C.secret_retrievable_get_modified(_arg0)
 	runtime.KeepAlive(self)
@@ -232,7 +203,7 @@ func (self *Retrievable) RetrieveSecret(ctx context.Context, callback gio.AsyncR
 	var _arg2 C.GAsyncReadyCallback // out
 	var _arg3 C.gpointer
 
-	_arg0 = (*C.SecretRetrievable)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretRetrievable)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
@@ -267,8 +238,8 @@ func (self *Retrievable) RetrieveSecretFinish(result gio.AsyncResulter) (*Value,
 	var _cret *C.SecretValue       // in
 	var _cerr *C.GError            // in
 
-	_arg0 = (*C.SecretRetrievable)(unsafe.Pointer(self.Native()))
-	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(result.Native()))
+	_arg0 = (*C.SecretRetrievable)(unsafe.Pointer(externglib.InternObject(self).Native()))
+	_arg1 = (*C.GAsyncResult)(unsafe.Pointer(externglib.InternObject(result).Native()))
 
 	_cret = C.secret_retrievable_retrieve_secret_finish(_arg0, _arg1, &_cerr)
 	runtime.KeepAlive(self)
@@ -316,7 +287,7 @@ func (self *Retrievable) RetrieveSecretSync(ctx context.Context) (*Value, error)
 	var _cret *C.SecretValue       // in
 	var _cerr *C.GError            // in
 
-	_arg0 = (*C.SecretRetrievable)(unsafe.Pointer(self.Native()))
+	_arg0 = (*C.SecretRetrievable)(unsafe.Pointer(externglib.InternObject(self).Native()))
 	{
 		cancellable := gcancel.GCancellableFromContext(ctx)
 		defer runtime.KeepAlive(cancellable)
