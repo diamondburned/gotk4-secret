@@ -325,7 +325,7 @@ func (self *Collection) Flags() CollectionFlags {
 //    - list of items, when done, the list should be freed with g_list_free, and
 //      each item should be released with g_object_unref().
 //
-func (self *Collection) Items() []Item {
+func (self *Collection) Items() []*Item {
 	var _arg0 *C.SecretCollection // out
 	var _cret *C.GList            // in
 
@@ -334,13 +334,13 @@ func (self *Collection) Items() []Item {
 	_cret = C.secret_collection_get_items(_arg0)
 	runtime.KeepAlive(self)
 
-	var _list []Item // out
+	var _list []*Item // out
 
-	_list = make([]Item, 0, gextras.ListSize(unsafe.Pointer(_cret)))
+	_list = make([]*Item, 0, gextras.ListSize(unsafe.Pointer(_cret)))
 	gextras.MoveList(unsafe.Pointer(_cret), true, func(v unsafe.Pointer) {
 		src := (*C.SecretItem)(v)
-		var dst Item // out
-		dst = *wrapItem(externglib.AssumeOwnership(unsafe.Pointer(src)))
+		var dst *Item // out
+		dst = wrapItem(externglib.AssumeOwnership(unsafe.Pointer(src)))
 		_list = append(_list, dst)
 	})
 
@@ -639,7 +639,7 @@ func (self *Collection) Search(ctx context.Context, schema *Schema, attributes m
 //
 //    - list: a list of items that matched the search.
 //
-func (self *Collection) SearchFinish(result gio.AsyncResulter) ([]Item, error) {
+func (self *Collection) SearchFinish(result gio.AsyncResulter) ([]*Item, error) {
 	var _arg0 *C.SecretCollection // out
 	var _arg1 *C.GAsyncResult     // out
 	var _cret *C.GList            // in
@@ -652,14 +652,14 @@ func (self *Collection) SearchFinish(result gio.AsyncResulter) ([]Item, error) {
 	runtime.KeepAlive(self)
 	runtime.KeepAlive(result)
 
-	var _list []Item // out
-	var _goerr error // out
+	var _list []*Item // out
+	var _goerr error  // out
 
-	_list = make([]Item, 0, gextras.ListSize(unsafe.Pointer(_cret)))
+	_list = make([]*Item, 0, gextras.ListSize(unsafe.Pointer(_cret)))
 	gextras.MoveList(unsafe.Pointer(_cret), true, func(v unsafe.Pointer) {
 		src := (*C.SecretItem)(v)
-		var dst Item // out
-		dst = *wrapItem(externglib.AssumeOwnership(unsafe.Pointer(src)))
+		var dst *Item // out
+		dst = wrapItem(externglib.AssumeOwnership(unsafe.Pointer(src)))
 		_list = append(_list, dst)
 	})
 	if _cerr != nil {
@@ -697,7 +697,7 @@ func (self *Collection) SearchFinish(result gio.AsyncResulter) ([]Item, error) {
 //
 //    - list: a list of items that matched the search.
 //
-func (self *Collection) SearchSync(ctx context.Context, schema *Schema, attributes map[string]string, flags SearchFlags) ([]Item, error) {
+func (self *Collection) SearchSync(ctx context.Context, schema *Schema, attributes map[string]string, flags SearchFlags) ([]*Item, error) {
 	var _arg0 *C.SecretCollection // out
 	var _arg4 *C.GCancellable     // out
 	var _arg1 *C.SecretSchema     // out
@@ -735,14 +735,14 @@ func (self *Collection) SearchSync(ctx context.Context, schema *Schema, attribut
 	runtime.KeepAlive(attributes)
 	runtime.KeepAlive(flags)
 
-	var _list []Item // out
-	var _goerr error // out
+	var _list []*Item // out
+	var _goerr error  // out
 
-	_list = make([]Item, 0, gextras.ListSize(unsafe.Pointer(_cret)))
+	_list = make([]*Item, 0, gextras.ListSize(unsafe.Pointer(_cret)))
 	gextras.MoveList(unsafe.Pointer(_cret), true, func(v unsafe.Pointer) {
 		src := (*C.SecretItem)(v)
-		var dst Item // out
-		dst = *wrapItem(externglib.AssumeOwnership(unsafe.Pointer(src)))
+		var dst *Item // out
+		dst = wrapItem(externglib.AssumeOwnership(unsafe.Pointer(src)))
 		_list = append(_list, dst)
 	})
 	if _cerr != nil {

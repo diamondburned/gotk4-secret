@@ -601,7 +601,7 @@ func (self *Service) CollectionGType() externglib.Type {
 //
 //    - list (optional): a list of the collections in the secret service.
 //
-func (self *Service) Collections() []Collection {
+func (self *Service) Collections() []*Collection {
 	var _arg0 *C.SecretService // out
 	var _cret *C.GList         // in
 
@@ -610,14 +610,14 @@ func (self *Service) Collections() []Collection {
 	_cret = C.secret_service_get_collections(_arg0)
 	runtime.KeepAlive(self)
 
-	var _list []Collection // out
+	var _list []*Collection // out
 
 	if _cret != nil {
-		_list = make([]Collection, 0, gextras.ListSize(unsafe.Pointer(_cret)))
+		_list = make([]*Collection, 0, gextras.ListSize(unsafe.Pointer(_cret)))
 		gextras.MoveList(unsafe.Pointer(_cret), true, func(v unsafe.Pointer) {
 			src := (*C.SecretCollection)(v)
-			var dst Collection // out
-			dst = *wrapCollection(externglib.AssumeOwnership(unsafe.Pointer(src)))
+			var dst *Collection // out
+			dst = wrapCollection(externglib.AssumeOwnership(unsafe.Pointer(src)))
 			_list = append(_list, dst)
 		})
 	}
@@ -827,7 +827,7 @@ func (self *Service) LoadCollectionsSync(ctx context.Context) error {
 //    - objects items or collections to lock.
 //    - callback (optional): called when the operation completes.
 //
-func (service *Service) Lock(ctx context.Context, objects []gio.DBusProxy, callback gio.AsyncReadyCallback) {
+func (service *Service) Lock(ctx context.Context, objects []*gio.DBusProxy, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretService      // out
 	var _arg2 *C.GCancellable       // out
 	var _arg1 *C.GList              // out
@@ -845,7 +845,7 @@ func (service *Service) Lock(ctx context.Context, objects []gio.DBusProxy, callb
 	for i := len(objects) - 1; i >= 0; i-- {
 		src := objects[i]
 		var dst *C.GDBusProxy // out
-		dst = (*C.GDBusProxy)(unsafe.Pointer(externglib.InternObject((&src)).Native()))
+		dst = (*C.GDBusProxy)(unsafe.Pointer(externglib.InternObject(src).Native()))
 		_arg1 = C.g_list_prepend(_arg1, C.gpointer(unsafe.Pointer(dst)))
 	}
 	defer C.g_list_free(_arg1)
@@ -877,7 +877,7 @@ func (service *Service) Lock(ctx context.Context, objects []gio.DBusProxy, callb
 //      were locked.
 //    - gint: number of items or collections that were locked.
 //
-func (service *Service) LockFinish(result gio.AsyncResulter) ([]gio.DBusProxy, int, error) {
+func (service *Service) LockFinish(result gio.AsyncResulter) ([]*gio.DBusProxy, int, error) {
 	var _arg0 *C.SecretService // out
 	var _arg1 *C.GAsyncResult  // out
 	var _arg2 *C.GList         // in
@@ -893,18 +893,18 @@ func (service *Service) LockFinish(result gio.AsyncResulter) ([]gio.DBusProxy, i
 	runtime.KeepAlive(service)
 	runtime.KeepAlive(result)
 
-	var _locked []gio.DBusProxy // out
-	var _gint int               // out
-	var _goerr error            // out
+	var _locked []*gio.DBusProxy // out
+	var _gint int                // out
+	var _goerr error             // out
 
 	if _arg2 != nil {
-		_locked = make([]gio.DBusProxy, 0, gextras.ListSize(unsafe.Pointer(_arg2)))
+		_locked = make([]*gio.DBusProxy, 0, gextras.ListSize(unsafe.Pointer(_arg2)))
 		gextras.MoveList(unsafe.Pointer(_arg2), true, func(v unsafe.Pointer) {
 			src := (*C.GDBusProxy)(v)
-			var dst gio.DBusProxy // out
+			var dst *gio.DBusProxy // out
 			{
 				obj := externglib.AssumeOwnership(unsafe.Pointer(src))
-				dst = gio.DBusProxy{
+				dst = &gio.DBusProxy{
 					Object: obj,
 					AsyncInitable: gio.AsyncInitable{
 						Object: obj,
@@ -951,7 +951,7 @@ func (service *Service) LockFinish(result gio.AsyncResulter) ([]gio.DBusProxy, i
 //      were locked.
 //    - gint: number of items or collections that were locked.
 //
-func (service *Service) LockSync(ctx context.Context, objects []gio.DBusProxy) ([]gio.DBusProxy, int, error) {
+func (service *Service) LockSync(ctx context.Context, objects []*gio.DBusProxy) ([]*gio.DBusProxy, int, error) {
 	var _arg0 *C.SecretService // out
 	var _arg2 *C.GCancellable  // out
 	var _arg1 *C.GList         // out
@@ -970,7 +970,7 @@ func (service *Service) LockSync(ctx context.Context, objects []gio.DBusProxy) (
 	for i := len(objects) - 1; i >= 0; i-- {
 		src := objects[i]
 		var dst *C.GDBusProxy // out
-		dst = (*C.GDBusProxy)(unsafe.Pointer(externglib.InternObject((&src)).Native()))
+		dst = (*C.GDBusProxy)(unsafe.Pointer(externglib.InternObject(src).Native()))
 		_arg1 = C.g_list_prepend(_arg1, C.gpointer(unsafe.Pointer(dst)))
 	}
 	defer C.g_list_free(_arg1)
@@ -980,18 +980,18 @@ func (service *Service) LockSync(ctx context.Context, objects []gio.DBusProxy) (
 	runtime.KeepAlive(ctx)
 	runtime.KeepAlive(objects)
 
-	var _locked []gio.DBusProxy // out
-	var _gint int               // out
-	var _goerr error            // out
+	var _locked []*gio.DBusProxy // out
+	var _gint int                // out
+	var _goerr error             // out
 
 	if _arg3 != nil {
-		_locked = make([]gio.DBusProxy, 0, gextras.ListSize(unsafe.Pointer(_arg3)))
+		_locked = make([]*gio.DBusProxy, 0, gextras.ListSize(unsafe.Pointer(_arg3)))
 		gextras.MoveList(unsafe.Pointer(_arg3), true, func(v unsafe.Pointer) {
 			src := (*C.GDBusProxy)(v)
-			var dst gio.DBusProxy // out
+			var dst *gio.DBusProxy // out
 			{
 				obj := externglib.AssumeOwnership(unsafe.Pointer(src))
-				dst = gio.DBusProxy{
+				dst = &gio.DBusProxy{
 					Object: obj,
 					AsyncInitable: gio.AsyncInitable{
 						Object: obj,
@@ -1437,7 +1437,7 @@ func (service *Service) Search(ctx context.Context, schema *Schema, attributes m
 //
 //    - list: a list of items that matched the search.
 //
-func (service *Service) SearchFinish(result gio.AsyncResulter) ([]Item, error) {
+func (service *Service) SearchFinish(result gio.AsyncResulter) ([]*Item, error) {
 	var _arg0 *C.SecretService // out
 	var _arg1 *C.GAsyncResult  // out
 	var _cret *C.GList         // in
@@ -1452,14 +1452,14 @@ func (service *Service) SearchFinish(result gio.AsyncResulter) ([]Item, error) {
 	runtime.KeepAlive(service)
 	runtime.KeepAlive(result)
 
-	var _list []Item // out
-	var _goerr error // out
+	var _list []*Item // out
+	var _goerr error  // out
 
-	_list = make([]Item, 0, gextras.ListSize(unsafe.Pointer(_cret)))
+	_list = make([]*Item, 0, gextras.ListSize(unsafe.Pointer(_cret)))
 	gextras.MoveList(unsafe.Pointer(_cret), true, func(v unsafe.Pointer) {
 		src := (*C.SecretItem)(v)
-		var dst Item // out
-		dst = *wrapItem(externglib.AssumeOwnership(unsafe.Pointer(src)))
+		var dst *Item // out
+		dst = wrapItem(externglib.AssumeOwnership(unsafe.Pointer(src)))
 		_list = append(_list, dst)
 	})
 	if _cerr != nil {
@@ -1502,7 +1502,7 @@ func (service *Service) SearchFinish(result gio.AsyncResulter) ([]Item, error) {
 //
 //    - list: a list of items that matched the search.
 //
-func (service *Service) SearchSync(ctx context.Context, schema *Schema, attributes map[string]string, flags SearchFlags) ([]Item, error) {
+func (service *Service) SearchSync(ctx context.Context, schema *Schema, attributes map[string]string, flags SearchFlags) ([]*Item, error) {
 	var _arg0 *C.SecretService    // out
 	var _arg4 *C.GCancellable     // out
 	var _arg1 *C.SecretSchema     // out
@@ -1542,14 +1542,14 @@ func (service *Service) SearchSync(ctx context.Context, schema *Schema, attribut
 	runtime.KeepAlive(attributes)
 	runtime.KeepAlive(flags)
 
-	var _list []Item // out
-	var _goerr error // out
+	var _list []*Item // out
+	var _goerr error  // out
 
-	_list = make([]Item, 0, gextras.ListSize(unsafe.Pointer(_cret)))
+	_list = make([]*Item, 0, gextras.ListSize(unsafe.Pointer(_cret)))
 	gextras.MoveList(unsafe.Pointer(_cret), true, func(v unsafe.Pointer) {
 		src := (*C.SecretItem)(v)
-		var dst Item // out
-		dst = *wrapItem(externglib.AssumeOwnership(unsafe.Pointer(src)))
+		var dst *Item // out
+		dst = wrapItem(externglib.AssumeOwnership(unsafe.Pointer(src)))
 		_list = append(_list, dst)
 	})
 	if _cerr != nil {
@@ -1904,7 +1904,7 @@ func (service *Service) StoreSync(ctx context.Context, schema *Schema, attribute
 //    - objects items or collections to unlock.
 //    - callback (optional): called when the operation completes.
 //
-func (service *Service) Unlock(ctx context.Context, objects []gio.DBusProxy, callback gio.AsyncReadyCallback) {
+func (service *Service) Unlock(ctx context.Context, objects []*gio.DBusProxy, callback gio.AsyncReadyCallback) {
 	var _arg0 *C.SecretService      // out
 	var _arg2 *C.GCancellable       // out
 	var _arg1 *C.GList              // out
@@ -1922,7 +1922,7 @@ func (service *Service) Unlock(ctx context.Context, objects []gio.DBusProxy, cal
 	for i := len(objects) - 1; i >= 0; i-- {
 		src := objects[i]
 		var dst *C.GDBusProxy // out
-		dst = (*C.GDBusProxy)(unsafe.Pointer(externglib.InternObject((&src)).Native()))
+		dst = (*C.GDBusProxy)(unsafe.Pointer(externglib.InternObject(src).Native()))
 		_arg1 = C.g_list_prepend(_arg1, C.gpointer(unsafe.Pointer(dst)))
 	}
 	defer C.g_list_free(_arg1)
@@ -1954,7 +1954,7 @@ func (service *Service) Unlock(ctx context.Context, objects []gio.DBusProxy, cal
 //      were unlocked.
 //    - gint: number of items or collections that were unlocked.
 //
-func (service *Service) UnlockFinish(result gio.AsyncResulter) ([]gio.DBusProxy, int, error) {
+func (service *Service) UnlockFinish(result gio.AsyncResulter) ([]*gio.DBusProxy, int, error) {
 	var _arg0 *C.SecretService // out
 	var _arg1 *C.GAsyncResult  // out
 	var _arg2 *C.GList         // in
@@ -1970,18 +1970,18 @@ func (service *Service) UnlockFinish(result gio.AsyncResulter) ([]gio.DBusProxy,
 	runtime.KeepAlive(service)
 	runtime.KeepAlive(result)
 
-	var _unlocked []gio.DBusProxy // out
-	var _gint int                 // out
-	var _goerr error              // out
+	var _unlocked []*gio.DBusProxy // out
+	var _gint int                  // out
+	var _goerr error               // out
 
 	if _arg2 != nil {
-		_unlocked = make([]gio.DBusProxy, 0, gextras.ListSize(unsafe.Pointer(_arg2)))
+		_unlocked = make([]*gio.DBusProxy, 0, gextras.ListSize(unsafe.Pointer(_arg2)))
 		gextras.MoveList(unsafe.Pointer(_arg2), true, func(v unsafe.Pointer) {
 			src := (*C.GDBusProxy)(v)
-			var dst gio.DBusProxy // out
+			var dst *gio.DBusProxy // out
 			{
 				obj := externglib.AssumeOwnership(unsafe.Pointer(src))
-				dst = gio.DBusProxy{
+				dst = &gio.DBusProxy{
 					Object: obj,
 					AsyncInitable: gio.AsyncInitable{
 						Object: obj,
@@ -2028,7 +2028,7 @@ func (service *Service) UnlockFinish(result gio.AsyncResulter) ([]gio.DBusProxy,
 //      were unlocked.
 //    - gint: number of items or collections that were unlocked.
 //
-func (service *Service) UnlockSync(ctx context.Context, objects []gio.DBusProxy) ([]gio.DBusProxy, int, error) {
+func (service *Service) UnlockSync(ctx context.Context, objects []*gio.DBusProxy) ([]*gio.DBusProxy, int, error) {
 	var _arg0 *C.SecretService // out
 	var _arg2 *C.GCancellable  // out
 	var _arg1 *C.GList         // out
@@ -2047,7 +2047,7 @@ func (service *Service) UnlockSync(ctx context.Context, objects []gio.DBusProxy)
 	for i := len(objects) - 1; i >= 0; i-- {
 		src := objects[i]
 		var dst *C.GDBusProxy // out
-		dst = (*C.GDBusProxy)(unsafe.Pointer(externglib.InternObject((&src)).Native()))
+		dst = (*C.GDBusProxy)(unsafe.Pointer(externglib.InternObject(src).Native()))
 		_arg1 = C.g_list_prepend(_arg1, C.gpointer(unsafe.Pointer(dst)))
 	}
 	defer C.g_list_free(_arg1)
@@ -2057,18 +2057,18 @@ func (service *Service) UnlockSync(ctx context.Context, objects []gio.DBusProxy)
 	runtime.KeepAlive(ctx)
 	runtime.KeepAlive(objects)
 
-	var _unlocked []gio.DBusProxy // out
-	var _gint int                 // out
-	var _goerr error              // out
+	var _unlocked []*gio.DBusProxy // out
+	var _gint int                  // out
+	var _goerr error               // out
 
 	if _arg3 != nil {
-		_unlocked = make([]gio.DBusProxy, 0, gextras.ListSize(unsafe.Pointer(_arg3)))
+		_unlocked = make([]*gio.DBusProxy, 0, gextras.ListSize(unsafe.Pointer(_arg3)))
 		gextras.MoveList(unsafe.Pointer(_arg3), true, func(v unsafe.Pointer) {
 			src := (*C.GDBusProxy)(v)
-			var dst gio.DBusProxy // out
+			var dst *gio.DBusProxy // out
 			{
 				obj := externglib.AssumeOwnership(unsafe.Pointer(src))
-				dst = gio.DBusProxy{
+				dst = &gio.DBusProxy{
 					Object: obj,
 					AsyncInitable: gio.AsyncInitable{
 						Object: obj,

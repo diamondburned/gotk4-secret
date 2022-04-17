@@ -1193,7 +1193,7 @@ func ItemCreateSync(ctx context.Context, collection *Collection, schema *Schema,
 //    - items to retrieve secrets for.
 //    - callback (optional): called when the operation completes.
 //
-func ItemLoadSecrets(ctx context.Context, items []Item, callback gio.AsyncReadyCallback) {
+func ItemLoadSecrets(ctx context.Context, items []*Item, callback gio.AsyncReadyCallback) {
 	var _arg2 *C.GCancellable       // out
 	var _arg1 *C.GList              // out
 	var _arg3 C.GAsyncReadyCallback // out
@@ -1207,7 +1207,7 @@ func ItemLoadSecrets(ctx context.Context, items []Item, callback gio.AsyncReadyC
 	for i := len(items) - 1; i >= 0; i-- {
 		src := items[i]
 		var dst *C.SecretItem // out
-		dst = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject((&src)).Native()))
+		dst = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(src).Native()))
 		_arg1 = C.g_list_prepend(_arg1, C.gpointer(unsafe.Pointer(dst)))
 	}
 	defer C.g_list_free(_arg1)
@@ -1264,7 +1264,7 @@ func ItemLoadSecretsFinish(result gio.AsyncResulter) error {
 //    - ctx (optional): optional cancellation object.
 //    - items to retrieve secrets for.
 //
-func ItemLoadSecretsSync(ctx context.Context, items []Item) error {
+func ItemLoadSecretsSync(ctx context.Context, items []*Item) error {
 	var _arg2 *C.GCancellable // out
 	var _arg1 *C.GList        // out
 	var _cerr *C.GError       // in
@@ -1277,7 +1277,7 @@ func ItemLoadSecretsSync(ctx context.Context, items []Item) error {
 	for i := len(items) - 1; i >= 0; i-- {
 		src := items[i]
 		var dst *C.SecretItem // out
-		dst = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject((&src)).Native()))
+		dst = (*C.SecretItem)(unsafe.Pointer(externglib.InternObject(src).Native()))
 		_arg1 = C.g_list_prepend(_arg1, C.gpointer(unsafe.Pointer(dst)))
 	}
 	defer C.g_list_free(_arg1)

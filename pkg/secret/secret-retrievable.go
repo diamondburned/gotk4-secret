@@ -33,6 +33,9 @@ func init() {
 
 // Retrievable: object representing a read-only view of a secret item in the
 // Secret Service.
+//
+// Retrievable wraps an interface. This means the user can get the
+// underlying type by calling Cast().
 type Retrievable struct {
 	_ [0]func() // equal guard
 	*externglib.Object

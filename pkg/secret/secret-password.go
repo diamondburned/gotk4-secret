@@ -310,7 +310,7 @@ func PasswordLookupSync(ctx context.Context, schema *Schema, attributes map[stri
 //
 //    - list of Retrievable containing attributes of the matched items.
 //
-func PasswordSearchFinish(result gio.AsyncResulter) ([]Retrievabler, error) {
+func PasswordSearchFinish(result gio.AsyncResulter) ([]*Retrievable, error) {
 	var _arg1 *C.GAsyncResult // out
 	var _cret *C.GList        // in
 	var _cerr *C.GError       // in
@@ -320,30 +320,14 @@ func PasswordSearchFinish(result gio.AsyncResulter) ([]Retrievabler, error) {
 	_cret = C.secret_password_search_finish(_arg1, &_cerr)
 	runtime.KeepAlive(result)
 
-	var _list []Retrievabler // out
+	var _list []*Retrievable // out
 	var _goerr error         // out
 
-	_list = make([]Retrievabler, 0, gextras.ListSize(unsafe.Pointer(_cret)))
+	_list = make([]*Retrievable, 0, gextras.ListSize(unsafe.Pointer(_cret)))
 	gextras.MoveList(unsafe.Pointer(_cret), true, func(v unsafe.Pointer) {
 		src := (*C.SecretRetrievable)(v)
-		var dst Retrievabler // out
-		{
-			objptr := unsafe.Pointer(src)
-			if objptr == nil {
-				panic("object of type secret.Retrievabler is nil")
-			}
-
-			object := externglib.AssumeOwnership(objptr)
-			casted := object.WalkCast(func(obj externglib.Objector) bool {
-				_, ok := obj.(Retrievabler)
-				return ok
-			})
-			rv, ok := casted.(Retrievabler)
-			if !ok {
-				panic("no marshaler for " + object.TypeFromInstance().String() + " matching secret.Retrievabler")
-			}
-			dst = rv
-		}
+		var dst *Retrievable // out
+		dst = wrapRetrievable(externglib.AssumeOwnership(unsafe.Pointer(src)))
 		_list = append(_list, dst)
 	})
 	if _cerr != nil {
@@ -425,7 +409,7 @@ func PasswordSearch(ctx context.Context, schema *Schema, attributes map[string]s
 //
 //    - list of Retrievable containing attributes of the matched items.
 //
-func PasswordSearchSync(ctx context.Context, schema *Schema, attributes map[string]string, flags SearchFlags) ([]Retrievabler, error) {
+func PasswordSearchSync(ctx context.Context, schema *Schema, attributes map[string]string, flags SearchFlags) ([]*Retrievable, error) {
 	var _arg4 *C.GCancellable     // out
 	var _arg1 *C.SecretSchema     // out
 	var _arg2 *C.GHashTable       // out
@@ -460,30 +444,14 @@ func PasswordSearchSync(ctx context.Context, schema *Schema, attributes map[stri
 	runtime.KeepAlive(attributes)
 	runtime.KeepAlive(flags)
 
-	var _list []Retrievabler // out
+	var _list []*Retrievable // out
 	var _goerr error         // out
 
-	_list = make([]Retrievabler, 0, gextras.ListSize(unsafe.Pointer(_cret)))
+	_list = make([]*Retrievable, 0, gextras.ListSize(unsafe.Pointer(_cret)))
 	gextras.MoveList(unsafe.Pointer(_cret), true, func(v unsafe.Pointer) {
 		src := (*C.SecretRetrievable)(v)
-		var dst Retrievabler // out
-		{
-			objptr := unsafe.Pointer(src)
-			if objptr == nil {
-				panic("object of type secret.Retrievabler is nil")
-			}
-
-			object := externglib.AssumeOwnership(objptr)
-			casted := object.WalkCast(func(obj externglib.Objector) bool {
-				_, ok := obj.(Retrievabler)
-				return ok
-			})
-			rv, ok := casted.(Retrievabler)
-			if !ok {
-				panic("no marshaler for " + object.TypeFromInstance().String() + " matching secret.Retrievabler")
-			}
-			dst = rv
-		}
+		var dst *Retrievable // out
+		dst = wrapRetrievable(externglib.AssumeOwnership(unsafe.Pointer(src)))
 		_list = append(_list, dst)
 	})
 	if _cerr != nil {
